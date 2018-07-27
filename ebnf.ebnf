@@ -1,0 +1,48 @@
+
+upper_letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
+             | "H" | "I" | "J" | "K" | "L" | "M" | "N"
+             | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
+             | "V" | "W" | "X" | "Y" | "Z" ;
+
+lower_letter = "a" | "b" | "c" | "d" | "e" | "f" | "g"
+             | "h" | "i" | "j" | "k" | "l" | "m" | "n"
+             | "o" | "p" | "q" | "r" | "s" | "t" | "u"
+             | "v" | "w" | "x" | "y" | "z" ;
+
+letter = upper_letter | lower_letter ;
+
+digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
+
+symbol_no_quote = "[" | "]" | "{" | "}" | "(" | ")" | "<"
+                | ">" | "=" | "|" | "." | "," | ";" ;
+
+symbol = symbol_no_quote | '"' | "'" ;
+
+character_all = letter | digit | symbol | "_" ;
+
+character_nq = letter | digit | symbol_no_quote | "_" ;
+
+character_sq = letter | digit | symbol_no_quote | "'" | "_" ;
+
+character_dq = letter | digit | symbol_no_quote | '"' | "_" ;
+
+identifier = letter , { letter | digit | "_" } ;
+
+terminal = '"' , character_sq , { character_sq } , '"'
+         | "'" , character_dq , { character_dq } , "'" ;
+
+lhs = identifier ;
+
+rhs = identifier
+    | terminal
+    | "[" , rhs , "]"
+    | "{" , rhs , "}"
+    | "(" , rhs , ")"
+    | rhs , "|" , rhs
+    | rhs , "," , rhs ;
+
+comment = "(", "*", { character_all } , "*", ")" ;
+
+rule = lhs , "=" , rhs, ";" ;
+
+grammar = { rule } ; 
