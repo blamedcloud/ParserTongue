@@ -1,22 +1,107 @@
+#!/usr/bin/env python3
+import re
+
+class Token(object):
+
+	def __init__(self, string, tokenType, quoteChar = None):
+		self.value = string
+		self._quoteChar = quoteChar
+		self.tokenType = tokenType
+		if not self.tokenType.isTypeOf(self.value):
+			raise TokenInstantiationTypeError("Token '" + self.value + "' is not of type '" + self.tokenType.getName() + "'")
+
+	def getType(self):
+		return self.tokenType
+
+	def getValue(self):
+		return self.value
+
+	def __str__(self):
+		if self._quoteChar == None:
+			quote = "'"
+		else:
+			quote = self._quoteChar
+		return '(' + str(self.tokenType) + ", "+ quote + self.value + quote + ")"
+
+	def __repr__(self):
+		return str(self)
+
+	def __eq__(self, other):
+		result = True
+		if isinstance(other, Token):
+			if self.value != other.value:
+				result = False
+			if self.tokenType != other.tokenType:
+				result = False
+		else:
+			if self.value != str(other):
+				result = False
+		return result
+
+
+class TokenType(object):
+	
+	def __init__(self, typeName, typePattern):
+		self.name = typeName
+		self.pattern = typePattern
+		self._re = re.compile(self.pattern)
+
+	def getName(self):
+		return self.name
+
+	def isTypeOf(self, raw):
+		return self._re.fullmatch(raw) != None
+
+	def __eq__(self, other):
+		result = True
+		if isinstance(other, TokenType):
+			if self.name != other.name:
+				result = False
+			if self.pattern != other.pattern:
+				result = False
+		else:
+			if self.name != str(other):
+				result = False
+		return result
+
+	def __str__(self):
+		return self.name
+
+	def __repr__(self):
+		return str(self)
+
 
 class Tokenizer(object):
 
-	def __init__(self, inFILE):
+	identifierType = TokenType("Identifier", r'[a-zA-Z][a-zA-Z0-9_]*')
+	controlType = TokenType("Control", r'[()[\]{}|,]')
+	defineType = TokenType("Define", r'=')
+	endType = TokenType("End", r';')
+	terminalType = TokenType("Terminal", r'[^\']*|[^"]*')
+
+	def __init__(self, inData, allowEscapes = False):
 		self.tokens = []
 		self.index = 0
+		self.escapes = allowEscapes
 		try:
-			self._createTokens(inFILE)
-		except TokenizerQuotingError as err:
+			self._createTokens(inData)
+		except TokenizerError as err:
 			print(err.message)
 			raise err
 
-	def _createTokens(self, FILE):
+	def _createTokens(self, rawTokens):
 		text = ''
-		for line in FILE:
-			text += line
+		if isinstance(rawTokens, str):
+			text = rawTokens
+		else: # a file or a list primarily
+			for line in rawTokens:
+				text += line
 		
 		# first tokenize qouted blocks individually.
-		blocks = self._handleQuoting(text)
+		if self.escapes:
+			blocks = self._handleQuotingWithEscapes(text)
+		else:
+			blocks = self._handleQuoting(text)
 	
 		for block in blocks:
 			if isinstance(block, Token):
@@ -30,9 +115,68 @@ class Tokenizer(object):
 				subBlocks = block.split(' ')
 				for subBlock in subBlocks:
 					if len(subBlock) > 0:
-						self.tokens.append(Token(subBlock, "'"))
-		
+						self.tokens.append(Token(subBlock, self.determineTokenType(subBlock)))
+	
+	def determineTokenType(self, tokenStr):
+		# terminalType is handled elsewhere
+		typeList = [Tokenizer.endType, Tokenizer.defineType, Tokenizer.controlType, Tokenizer.identifierType]
+		for tokenType in typeList:
+			if tokenType.isTypeOf(tokenStr):
+				return tokenType
+		raise UnknownTokenTypeError("Token '" + tokenStr + "' does not match any known tokenTypes!") 
+	
 	def _handleQuoting(self, rawText):
+		blocks = []
+
+		thisBlock = ''
+		quoteMatch = None
+
+		for char in rawText:
+			if char == '"' or char == "'":
+				if quoteMatch == None:
+					blocks.append(thisBlock)
+					thisBlock = ''
+					quoteMatch = char
+				elif char == quoteMatch:
+					blocks.append(Token(thisBlock, Tokenizer.terminalType, char))
+					thisBlock = ''
+					quoteMatch = None
+				else:
+					thisBlock += char
+			else:
+				thisBlock += char
+		if quoteMatch != None:
+			raise TokenizerQuotingError("Encountered Unmatched quote of type: " + quoteMatch)
+
+		if len(thisBlock) > 0:
+			blocks.append(thisBlock)
+
+		return blocks
+
+	def nextToken(self):
+		self.index += 1
+		if self.index >= len(self.tokens):
+			self.index = len(self.tokens)-1
+			return False
+		return True
+
+	def previousToken(self):
+		self.index -= 1
+		if self.index < 0:
+			self.index = 0
+			return False
+		return True
+
+	def currentToken(self):
+		return self.tokens[self.index]
+
+	def __str__(self):
+		return str(self.tokens)
+
+	def getTokenList(self):
+		return self.tokens
+
+	def _handleQuotingWithEscapes(self, rawText):
 		blocks = []
 		
 		escaping = False
@@ -73,7 +217,7 @@ class Tokenizer(object):
 						thisBlock = ''
 						quoteMatch = char
 					elif char == quoteMatch:
-						blocks.append(Token(thisBlock, char))
+						blocks.append(Token(thisBlock, terminalType, char))
 						thisBlock = ''
 						quoteMatch = None
 					else:
@@ -89,46 +233,26 @@ class Tokenizer(object):
 
 		return blocks
 
-	def nextToken(self):
-		self.index += 1
-		if self.index >= len(self.tokens):
-			self.index = len(self.tokens)-1
-			return False
-		return True
 
-	def previousToken(self):
-		self.index -= 1
-		if self.index < 0:
-			self.index = 0
-			return False
-		return True
-
-	def currentToken(self):
-		return self.tokens[self.index]
-
-	def __str__(self):
-		return str(self.tokens)
+class TokenizerError(Exception):
+	pass
 
 
-class Token(object):
-
-	def __init__(self, string, quoteChar = None):
-		self.string = string
-		self._quoteChar = quoteChar
-
-	def __str__(self):
-		return self.string
-
-	def __repr__(self):
-		if self._quoteChar == None:
-			return str(self)
-		elif self._quoteChar == '"':
-			return '"' + str(self) + '"'
-		else:
-			return "'" + str(self) + "'"
-
-
-class TokenizerQuotingError(Exception):
+class UnknownTokenTypeError(TokenizerError):
 
 	def __init__(self, message):
 		self.message = message
+
+
+class TokenInstantiationTypeError(TokenizerError):
+
+	def __init__(self, message):
+		self.message = message
+
+
+class TokenizerQuotingError(TokenizerError):
+
+	def __init__(self, message):
+		self.message = message
+
+

@@ -43,6 +43,6 @@ rhs = identifier
 
 comment = "(", "*", { character_all } , "*", ")" ;
 
-rule = lhs , "=" , rhs, ";" ;
+rule = lhs , "=" , rhs , ";" ;
 
 grammar = { rule } ; 
