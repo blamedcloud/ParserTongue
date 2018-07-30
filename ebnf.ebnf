@@ -41,7 +41,7 @@ rhs = identifier
     | rhs , "|" , rhs
     | rhs , "," , rhs ;
 
-comment = "(", "*", { character_all } , "*", ")" ;
+comment = "(" , "*" , { character_all } , "*" , ")" ;
 
 rule = lhs , "=" , rhs , ";" ;
 

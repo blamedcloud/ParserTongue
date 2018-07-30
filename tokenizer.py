@@ -88,6 +88,44 @@ class Tokenizer(object):
 		except TokenizerError as err:
 			print(err.message)
 			raise err
+	
+	def nextToken(self):
+		self.index += 1
+		if self.index >= len(self.tokens):
+			self.index = len(self.tokens)-1
+			return False
+		return True
+
+	def previousToken(self):
+		self.index -= 1
+		if self.index < 0:
+			self.index = 0
+			return False
+		return True
+
+	def currentToken(self):
+		return self.tokens[self.index]
+
+	def getIndex(self):
+		return self.index
+
+	def __len__(self):
+		return len(self.tokens)
+
+	def __str__(self):
+		return str(self.tokens)
+
+	# Not super recomended, but provided anyway
+	def getTokenList(self):
+		return self.tokens
+
+	def _determineTokenType(self, tokenStr):
+		# terminalType is handled elsewhere
+		typeList = [Tokenizer.endType, Tokenizer.defineType, Tokenizer.controlType, Tokenizer.identifierType]
+		for tokenType in typeList:
+			if tokenType.isTypeOf(tokenStr):
+				return tokenType
+		raise UnknownTokenTypeError("Token '" + tokenStr + "' does not match any known tokenTypes!") 
 
 	def _createTokens(self, rawTokens):
 		text = ''
@@ -115,16 +153,8 @@ class Tokenizer(object):
 				subBlocks = block.split(' ')
 				for subBlock in subBlocks:
 					if len(subBlock) > 0:
-						self.tokens.append(Token(subBlock, self.determineTokenType(subBlock)))
-	
-	def determineTokenType(self, tokenStr):
-		# terminalType is handled elsewhere
-		typeList = [Tokenizer.endType, Tokenizer.defineType, Tokenizer.controlType, Tokenizer.identifierType]
-		for tokenType in typeList:
-			if tokenType.isTypeOf(tokenStr):
-				return tokenType
-		raise UnknownTokenTypeError("Token '" + tokenStr + "' does not match any known tokenTypes!") 
-	
+						self.tokens.append(Token(subBlock, self._determineTokenType(subBlock)))
+
 	def _handleQuoting(self, rawText):
 		blocks = []
 
@@ -152,29 +182,6 @@ class Tokenizer(object):
 			blocks.append(thisBlock)
 
 		return blocks
-
-	def nextToken(self):
-		self.index += 1
-		if self.index >= len(self.tokens):
-			self.index = len(self.tokens)-1
-			return False
-		return True
-
-	def previousToken(self):
-		self.index -= 1
-		if self.index < 0:
-			self.index = 0
-			return False
-		return True
-
-	def currentToken(self):
-		return self.tokens[self.index]
-
-	def __str__(self):
-		return str(self.tokens)
-
-	def getTokenList(self):
-		return self.tokens
 
 	def _handleQuotingWithEscapes(self, rawText):
 		blocks = []
