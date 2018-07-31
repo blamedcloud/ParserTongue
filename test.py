@@ -7,7 +7,7 @@ def grammarTest():
 	for i, rule in enumerate(ebnf.getRuleList()):
 		print("Rule " + str(i) + ":\n")
 		print(str(rule))
-		print("\n")
+		print()
 
 def tokenizerTest():
 	with open("ebnf.ebnf", "r") as FILE:

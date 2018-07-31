@@ -65,6 +65,7 @@ class Rule(object):
 		else:
 			raise RuleParsingError("Rule has no '=': " + raw)
 		self.rhsTree = self._parseRHS()
+		self.rhsTree.joinSameListChildren()
 
 	def _currentTokenType(self):
 		return self.tokens.currentToken().getType()
@@ -233,6 +234,20 @@ class RHSTree(object):
 
 	def __len__(self):
 		return len(self.children)
+
+	def joinSameListChildren(self):
+		if len(self.children) > 0:
+			for child in self.children:
+				child.joinSameListChildren()
+		if self.levelKind == RHSKind.LIST:
+			newChildren = []
+			for child in self.children:
+				if child.levelType == self.levelType:
+					for i in range(len(child)):
+						newChildren.append(child.getChild(i))
+				else:
+					newChildren.append(child)
+			self.children = newChildren
 
 	def createNode(self, node):
 		if self.node == None and self.levelKind.value == 0:
