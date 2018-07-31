@@ -38,6 +38,9 @@ class Token(object):
 				result = False
 		return result
 
+	def copy(self):
+		return Token(self.value, self.tokenType, self._quoteChar)
+
 
 class TokenType(object):
 	
@@ -83,6 +86,7 @@ class Tokenizer(object):
 		self.tokens = []
 		self.index = 0
 		self.escapes = allowEscapes
+		self._exhausted = False
 		try:
 			self._createTokens(inData)
 		except TokenizerError as err:
@@ -92,6 +96,7 @@ class Tokenizer(object):
 	def nextToken(self):
 		self.index += 1
 		if self.index >= len(self.tokens):
+			self._exhausted = True
 			self.index = len(self.tokens)-1
 			return False
 		return True
@@ -102,6 +107,9 @@ class Tokenizer(object):
 			self.index = 0
 			return False
 		return True
+
+	def isExhausted(self):
+		return self._exhausted
 
 	def currentToken(self):
 		return self.tokens[self.index]
@@ -114,6 +122,34 @@ class Tokenizer(object):
 
 	def __str__(self):
 		return str(self.tokens)
+
+	def splitTokensOn(self, splitToken):
+		tokenizers = []
+		newTokens = []
+		for t in self.tokens:
+			if t == splitToken:
+				if len(newTokens) > 0:
+					newTokenizer = Tokenizer('')
+					newTokenizer.resetFromTokenList(newTokens)
+					tokenizers.append(newTokenizer)
+					newTokens = []
+			else:
+				newTokens.append(t)
+		if len(newTokens) > 0:
+			newTokenizer = Tokenizer('')
+			tokenizers.append(newTokenizer.resetFromTokenList(newTokens))
+		return tokenizers
+
+	def resetFromTokenList(self, tokenList):
+		self.tokens = []
+		for t in tokenList:
+			if not isinstance(t, Token):
+				raise TokenizerCreationError("in Tokenizer.resetFromTokenList : given list contains non-token!")
+			self.tokens.append(t)
+
+	# used by Grammar to check the last token is ';' before splitting.
+	def getLastToken(self):
+		return self.tokens[-1]
 
 	# Not super recomended, but provided anyway
 	def getTokenList(self):
@@ -247,6 +283,12 @@ class TokenizerError(Exception):
 
 class UnknownTokenTypeError(TokenizerError):
 
+	def __init__(self, message):
+		self.message = message
+
+
+class TokenizerCreationError(TokenizerError):
+	
 	def __init__(self, message):
 		self.message = message
 
