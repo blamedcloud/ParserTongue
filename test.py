@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
+import sys
 import tokenizer
 import grammar
 
-def grammarTest():
-	ebnf = grammar.Grammar('ebnf.ebnf')
+def grammarTest(inFile = 'ebnf.ebnf'):
+	ebnf = grammar.Grammar(inFile)
 	for i, rule in enumerate(ebnf.getRuleList()):
 		print("Rule " + str(i) + ":\n")
 		print(str(rule))
@@ -15,4 +16,7 @@ def tokenizerTest():
 	print(tokens)
 
 if __name__ == "__main__":
-	grammarTest()
+	inFile = 'ebnf.ebnf'
+	if len(sys.argv) == 2:
+		inFile = sys.argv[1]
+	grammarTest(inFile)
