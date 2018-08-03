@@ -66,6 +66,8 @@ class Rule(object):
 		else:
 			raise RuleParsingError("Rule has no '=': " + raw)
 		self.rhsTree = self._parseRHS()
+		if not self.tokens.isExhausted():
+			raise RuleParsingError("Didn't Exhaust all tokens!")
 
 	def _currentTokenType(self):
 		return self.tokens.currentToken().getType()
@@ -292,7 +294,7 @@ class RHSTree(object):
 		if self.node == None and self.levelKind.value == 0:
 			self.node = node
 		else:
-			if self.none != None:
+			if self.node != None:
 				raise RuleTreeError("Can't create Node: '" + str(node) + "' because a node is already present!")
 			if self.levelKind.value != 0:
 				raise RuleTreeError("Can't create Node: '" + str(node) + "' on RHSTree of Type: " + self.levelType.name)
