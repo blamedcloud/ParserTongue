@@ -37,7 +37,11 @@ class Grammar(object):
 		except Exception as err:
 			print("Exception thrown while parsing rule",i)
 			raise err
+
 		self.ruleDict = {r.lhs().getValue() : r for r in self.rules}
+		for rule in self.rules:
+			rule.createLinkage(self.ruleDict)
+
 		if startSym == None:
 			index = 0
 			# set last rule as start instead of first
@@ -87,6 +91,9 @@ class Rule(object):
 		self.rhsTree = self._parseRHS()
 		if not self.tokens.isExhausted():
 			raise RuleParsingError("Didn't Exhaust all tokens!")
+
+	def createLinkage(self, ruleDict):
+		self.rhsTree.addLinkage(ruleDict)
 
 	def _currentTokenType(self):
 		return self.tokens.currentToken().getType()
@@ -291,6 +298,7 @@ class RHSTree(object):
 		self.children = []
 		self.node = None
 		self.levelKind = getRHSKind(self.levelType)
+		self.link = None
 
 	def addChild(self, child):
 		if self.levelKind.value == 0:
@@ -299,6 +307,17 @@ class RHSTree(object):
 			raise RuleTreeError("Can't add child:\n" + str(child) + "\nTo SINGLE RHSKind of Type: " + self.levelType.name + ", because it already has one child!")
 		else:
 			self.children.append(child)
+
+	def addLinkage(self, ruleDict):
+		if self.levelType == RHSType.IDENTIFIER:
+			if self.node.getValue() in ruleDict:
+				self.link = ruleDict[self.node.getValue()]
+			else:
+				raise GrammarParsingError("ERROR, identifier: '" + self.node.getValue() + "' does not exist in rule mapping!")
+		elif self.levelKind in [RHSKind.LIST, RHSKind.SINGLE]:
+			for child in self.children:
+				child.addLinkage(ruleDict)
+
 
 	def popRightChild(self):
 		if len(self.children) > 0:
