@@ -1,12 +1,17 @@
 #!/usr/bin/env python3
-
+#parser.py
+from grammar import Grammar
 
 class Parser(object):
 
-	def __init__(self, grammar, rawFile):
-		self.grammar = grammar
-		with open(rawFile, 'r') as FILE:
-			self.tokens = Tokenizer(FILE)	
-		
+    def __init__(self, grammarFile, startIdentifier):
+        self.grammar = Grammar(grammarFile, startSym = startIdentifier)
+
+
+    def parse(self, rawFile):
+        tokens = None
+        with open(rawFile, 'r') as FILE:
+            tokens = Tokenizer(FILE)
+
 
 

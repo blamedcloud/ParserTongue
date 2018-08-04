@@ -6,8 +6,9 @@ from tokenizer import Tokenizer
 from enum import Enum
 
 class Grammar(object):
-	
-	def __init__(self, grammarFile):
+
+	def __init__(self, grammarFile, startSym = None, lastStart = False, quiet = True):
+		self.quiet = quiet
 		full_text = ""
 		with open(grammarFile) as FILE:
 			for line in FILE:
@@ -20,13 +21,14 @@ class Grammar(object):
 		ruleTokenizers = fullTokenizer.splitTokensOn(splitToken)
 
 		# debug:
-		for i, r in enumerate(ruleTokenizers):
-			print(str(i) + ": \n\t" + str(r))
+	#	for i, r in enumerate(ruleTokenizers):
+	#		print(str(i) + ": \n\t" + str(r))
 
 		try:
 			self.rules = []
 			for i, tokens in enumerate(ruleTokenizers):
-				print("PARSING RULE:",i)
+				if not self.quiet:
+					print("PARSING RULE:",i)
 				self.rules.append(Rule(tokens))
 		except GrammarError as err:
 			print("Exception thrown while parsing rule",i)
@@ -35,13 +37,27 @@ class Grammar(object):
 		except Exception as err:
 			print("Exception thrown while parsing rule",i)
 			raise err
-#		self.ruleDict = {r.lhs() : r for r in ruleObjs}
-	
+		self.ruleDict = {r.lhs().getValue() : r for r in self.rules}
+		if startSym == None:
+			index = 0
+			# set last rule as start instead of first
+			if lastStart:
+				index = -1
+			self.start = self.rules[index].lhs().getValue()
+		else:
+			self.setStart(startSym)
+
 	def getRuleList(self):
 		return self.rules
 
+	def setStart(self, startSymbol):
+		if startSymbol in self.ruleDict:
+			self.start = startSymbol
+		else:
+			raise GrammarParsingError("Cannot add start symbol: '" + str(startSymbol) + "', because it does not exist!")
+
 class Rule(object):
-	
+
 	def __init__(self, tokens):
 		self.terminals = set()
 		self.nonTerminals = {}
@@ -222,7 +238,7 @@ class RHSType(Enum):
 	GROUP = 4
 	ALTERNATION = 5
 	CONCATENATION = 6
-	
+
 
 class RHSKind(Enum):
 	LIST = -1
@@ -236,7 +252,7 @@ def getMatchingControlBlock(startBlock):
 		return '}'
 	elif startBlock == '[':
 		return ']'
-	raise RuleParsingError("ERROR Token: '" + str(startBlock) + "' is not a control block token!") 
+	raise RuleParsingError("ERROR Token: '" + str(startBlock) + "' is not a control block token!")
 
 def getRHSSingleTypeFromTokenValue(tokenValue):
 	if tokenValue == "(":
@@ -259,8 +275,8 @@ def getRHSLeafTypeFromTokenType(tokenType):
 		return RHSType.IDENTIFIER
 	elif tokenType == Tokenizer.terminalType:
 		return RHSType.TERMINAL
-	raise RuleParsingError("ERROR Cannot determine RHSType of kind LEAF from token of type: " + str(tokenType))		
-		
+	raise RuleParsingError("ERROR Cannot determine RHSType of kind LEAF from token of type: " + str(tokenType))
+
 def getRHSKind(rhsType):
 	if rhsType is RHSType.IDENTIFIER or rhsType is RHSType.TERMINAL:
 		return RHSKind.LEAF
@@ -275,10 +291,10 @@ class RHSTree(object):
 		self.children = []
 		self.node = None
 		self.levelKind = getRHSKind(self.levelType)
-	
+
 	def addChild(self, child):
 		if self.levelKind.value == 0:
-			raise RuleTreeError("Can't add child:\n" + str(child) + "\nTo LEAF RHSTree kind of Type: " + self.levelType.name) 
+			raise RuleTreeError("Can't add child:\n" + str(child) + "\nTo LEAF RHSTree kind of Type: " + self.levelType.name)
 		elif self.levelKind.value == 1 and len(self) == 1:
 			raise RuleTreeError("Can't add child:\n" + str(child) + "\nTo SINGLE RHSKind of Type: " + self.levelType.name + ", because it already has one child!")
 		else:
