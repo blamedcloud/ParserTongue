@@ -106,6 +106,7 @@ venv.bak/
 # vim .swp files
 *.swp
 *.swo
+*.swn
 
 # testOut files
 testOut*.txt

@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-import tokenizer
+#grammar.py
+from errors import *
+from token import Token, TokenType
+from tokenizer import Tokenizer
 from enum import Enum
 
 class Grammar(object):
@@ -10,8 +13,8 @@ class Grammar(object):
 			for line in FILE:
 				full_text += line
 		full_text = full_text.replace("\n"," ").rstrip(' ')
-		fullTokenizer = tokenizer.Tokenizer(full_text)
-		splitToken = tokenizer.Token(';', tokenizer.Tokenizer.endType)
+		fullTokenizer = Tokenizer(full_text)
+		splitToken = Token(';', Tokenizer.endType)
 		if not fullTokenizer.getLastToken()	== splitToken:
 			raise GrammarParsingError("Found Text after last rule:\n\t" + rawRules[-1])
 		ruleTokenizers = fullTokenizer.splitTokensOn(splitToken)
@@ -56,12 +59,12 @@ class Rule(object):
 	def _parseRule(self):
 		if len(self.tokens) < 3:
 			raise RuleParsingError("Rule has too few tokens: " + raw)
-		if self._currentTokenType() == tokenizer.Tokenizer.identifierType:
+		if self._currentTokenType() == Tokenizer.identifierType:
 			self.lhsToken = self.tokens.currentToken()
 			self.tokens.nextToken()
 		else:
 			raise RuleParsingError("LHS is not an identifier: " + raw)
-		if self._currentTokenType() == tokenizer.Tokenizer.defineType:
+		if self._currentTokenType() == Tokenizer.defineType:
 			self.tokens.nextToken()
 		else:
 			raise RuleParsingError("Rule has no '=': " + raw)
@@ -80,14 +83,14 @@ class Rule(object):
 		currentType = self._currentTokenType()
 		currentTokenStr = self.tokens.currentToken().getValue()
 		if workingTree == None:
-			if currentType in [tokenizer.Tokenizer.identifierType, tokenizer.Tokenizer.terminalType]:
+			if currentType in [Tokenizer.identifierType, Tokenizer.terminalType]:
 				tree = RHSTree(getRHSLeafTypeFromTokenType(currentType))
 				tree.createNode(self.tokens.currentToken())
 				if self.tokens.nextToken():
 					return self._parseRHS(tree)
 				else:
 					return tree
-			elif currentType == tokenizer.Tokenizer.controlType:
+			elif currentType == Tokenizer.controlType:
 				if currentTokenStr in ['[', '{', '(']:
 					if self.tokens.nextToken():
 						tree = RHSTree(getRHSSingleTypeFromTokenValue(currentTokenStr))
@@ -95,7 +98,7 @@ class Rule(object):
 						newTokenStr = self.tokens.currentToken().getValue()
 						newTokenType = self._currentTokenType()
 						expectedTokenStr = getMatchingControlBlock(currentTokenStr)
-						if newTokenType == tokenizer.Tokenizer.controlType and expectedTokenStr == newTokenStr:
+						if newTokenType == Tokenizer.controlType and expectedTokenStr == newTokenStr:
 							if self.tokens.nextToken():
 								return self._parseRHS(tree)
 							else:
@@ -111,7 +114,7 @@ class Rule(object):
 		else:
 			workingKind = workingTree.getKind()
 			if workingKind in [RHSKind.LEAF, RHSKind.SINGLE]:
-				if currentType == tokenizer.Tokenizer.controlType:
+				if currentType == Tokenizer.controlType:
 					if currentTokenStr in [',', '|']:
 						tree = RHSTree(getRHSListTypeFromTokenValue(currentTokenStr))
 						tree.addChild(workingTree)
@@ -129,8 +132,8 @@ class Rule(object):
 						raise RuleParsingError("ERROR got bad control token: '"+ currentTokenStr +"' after '"+ workingKind.name +"' Kind.")
 				else:
 					raise RuleParsingError("ERROR got non-control token: '"+ currentTokenStr +"' after '"+ workingKind.name +"' Kind.")
-			else: # workingTree.getKind() == RHSKind.LIST:
-				if currentType == tokenizer.Tokenizer.controlType:
+			else:	# workingTree.getKind() == RHSKind.LIST:
+				if currentType == Tokenizer.controlType:
 					if currentTokenStr in [',', '|']:
 						if getRHSListTypeFromTokenValue(currentTokenStr) == workingTree.getType():
 							if self.tokens.nextToken():
@@ -153,8 +156,8 @@ class Rule(object):
 										return self._parseRHS(tree)
 								else:
 									raise RuleParsingError("ERROR expected rhs subtree after control token: '" + currentTokenStr + "'")
-							else: # currentTokenStr == ',':
-								  # workingType = ALTERNATION ('|')
+							else:	# currentTokenStr == ',':
+									# workingType = ALTERNATION ('|')
 								rightChild = workingTree.popRightChild()
 								tree.addChild(rightChild)
 								while (not self.tokens.isExhausted()) and self._currentTokenIsConcatenation():
@@ -173,12 +176,12 @@ class Rule(object):
 						raise RuleParsingError("ERROR found bad control token: '" + currentTokenStr + "' after LIST Kind.")
 				else:
 					raise RuleParsingError("ERROR found token '" + currentTokenStr + "' of type: " + str(currentType))
-		raise NotImplementedError # i must have missed something
+		raise NotImplementedError # I must have missed something
 
 	def _currentTokenIsConcatenation(self):
 		thisTokenValue = self.tokens.currentToken().getValue()
 		thisTokenType = self.tokens.currentToken().getType()
-		if thisTokenType == tokenizer.Tokenizer.controlType and thisTokenValue == ',':
+		if thisTokenType == Tokenizer.controlType and thisTokenValue == ',':
 			return True
 		return False
 
@@ -186,12 +189,12 @@ class Rule(object):
 		tree = None
 		currentType = self._currentTokenType()
 		currentTokenStr = self.tokens.currentToken().getValue()
-		if currentType in [tokenizer.Tokenizer.identifierType, tokenizer.Tokenizer.terminalType]:
+		if currentType in [Tokenizer.identifierType, Tokenizer.terminalType]:
 			tree = RHSTree(getRHSLeafTypeFromTokenType(currentType))
 			tree.createNode(self.tokens.currentToken())
 			self.tokens.nextToken()
 			return tree
-		elif currentType == tokenizer.Tokenizer.controlType:
+		elif currentType == Tokenizer.controlType:
 			if currentTokenStr in ['[', '{', '(']:
 				if self.tokens.nextToken():
 					tree = RHSTree(getRHSSingleTypeFromTokenValue(currentTokenStr))
@@ -199,7 +202,7 @@ class Rule(object):
 					newTokenStr = self.tokens.currentToken().getValue()
 					newTokenType = self._currentTokenType()
 					expectedTokenStr = getMatchingControlBlock(currentTokenStr)
-					if newTokenType == tokenizer.Tokenizer.controlType and expectedTokenStr == newTokenStr:
+					if newTokenType == Tokenizer.controlType and expectedTokenStr == newTokenStr:
 						self.tokens.nextToken()
 						return tree
 					else:
@@ -252,9 +255,9 @@ def getRHSListTypeFromTokenValue(tokenValue):
 	raise RuleParsingError("ERROR Cannot determine RHSType of kind LIST from token: '" + tokenValue + "'")
 
 def getRHSLeafTypeFromTokenType(tokenType):
-	if tokenType == tokenizer.Tokenizer.identifierType:
+	if tokenType == Tokenizer.identifierType:
 		return RHSType.IDENTIFIER
-	elif tokenType == tokenizer.Tokenizer.terminalType:
+	elif tokenType == Tokenizer.terminalType:
 		return RHSType.TERMINAL
 	raise RuleParsingError("ERROR Cannot determine RHSType of kind LEAF from token of type: " + str(tokenType))		
 		
@@ -322,27 +325,5 @@ class RHSTree(object):
 				value += prevIndent + str(i) + ":\n"
 				value += child.__str__(prevIndent+indent, indent)
 		return value
-
-
-class GrammarError(Exception):
-	pass
-
-
-class GrammarParsingError(GrammarError):
-
-	def __init__(self, message):
-		self.message = message
-
-
-class RuleParsingError(GrammarError):
-
-	def __init__(self, message):
-		self.message = message
-
- 
-class RuleTreeError(GrammarError):
-
-	def __init__(self, message):
-		self.message = message
 
 
