@@ -45,7 +45,7 @@ class Token(object):
 
 
 class TokenType(object):
-	
+
 	def __init__(self, typeName, typePattern):
 		self.name = typeName
 		self.pattern = typePattern
@@ -56,6 +56,9 @@ class TokenType(object):
 
 	def isTypeOf(self, raw):
 		return self._re.fullmatch(raw) != None
+
+	def getRE(self):
+		return self._re
 
 	def __eq__(self, other):
 		result = True

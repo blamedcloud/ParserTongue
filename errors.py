@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 #errors.py
 
-
 class ParserTongueError(Exception):
 	pass
 
@@ -20,19 +19,13 @@ class UnknownTokenTypeError(TokenizerError):
 		self.message = message
 
 
+class TokenizerNoMatchError(TokenizerError):
+
+	def __init__(self, message):
+		self.message = message
+
+
 class TokenizerCreationError(TokenizerError):
-	
-	def __init__(self, message):
-		self.message = message
-
-
-class TokenInstantiationTypeError(TokenizerError):
-
-	def __init__(self, message):
-		self.message = message
-
-
-class TokenizerQuotingError(TokenizerError):
 
 	def __init__(self, message):
 		self.message = message
@@ -57,7 +50,7 @@ class RuleParsingError(GrammarError):
 	def __init__(self, message):
 		self.message = message
 
- 
+
 class RuleTreeError(GrammarError):
 
 	def __init__(self, message):
