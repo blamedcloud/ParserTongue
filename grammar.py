@@ -80,11 +80,11 @@ class Rule(object):
 	def _parseOutComments(self):
 		pass
 
-	def expectMatch(self, tokens):
-		return self.rhsTree.expect(tokens)
+	def expectMatch(self, tokens, level = 0):
+		return self.rhsTree.expect(tokens, level)
 
-	def acceptMatch(self, tokens):
-		return self.rhsTree.accept(tokens)
+	def acceptMatch(self, tokens, level = 0):
+		return self.rhsTree.accept(tokens, level)
 
 	def lhs(self):
 		return self.lhsToken
@@ -331,77 +331,100 @@ class RHSTree(object):
 			for child in self.children:
 				child.addLinkage(ruleDict)
 
-	def expect(self, tokens):
+	def expect(self, tokens, level = 0):
+
+		### debug:
+		index = tokens.getIndex()
+		print('\t'*level + "RHSTree.expect(), Type:",self.levelType.name)
+		print('\t'*level + "Before Index:",index)
+
 		result = False
 		if self.levelType == RHSType.TERMINAL:
 			if self.node.getValue() == '':
 				result = True
-			elif self.node == tokens.currentToken():
+			elif (not tokens.isExhausted()) and self.node == tokens.currentToken():
 				tokens.nextToken()
 				result = True
 		elif self.levelType == RHSType.IDENTIFIER:
-			result = self.link.expectMatch(tokens)
+			result = self.link.expectMatch(tokens, level + 1)
 		elif self.levelType == RHSType.GROUP:
-			result = self.children[0].expect(tokens)
+			result = self.children[0].expect(tokens, level + 1)
 		elif self.levelType == RHSType.OPTIONAL:
-			result = self.children[0].accept(tokens) # ???
+			result = self.children[0].accept(tokens, level + 1) # ???
 		elif self.levelType == RHSType.REPEAT:
 			value = True
 			while value: # the greedy repeat...
-				value = self.children[0].accept(tokens)
+				value = self.children[0].accept(tokens, level + 1)
 			result = value
 		elif self.levelType == RHSType.CONCATENATION:
 			value = True
 			for child in self.children:
-				if not child.expect(tokens):
+				if not child.expect(tokens, level + 1):
 					value = False
 					break
 			result = value
 		elif self.levelType == RHSType.ALTERNATION:
 			for child in self.children[:-1]:
-				if child.accept(tokens):
+				if child.accept(tokens, level + 1):
 					result = True
 					break
 			if not result:
-				result = self.children[-1].expect(tokens)
+				result = self.children[-1].expect(tokens, level + 1)
+
+		### debug:
+		print('\t'*level + "After  Index:",tokens.getIndex())
+		print('\t'*level + "result:",result)
+		print('\t'*level + "Is Exhausted:",tokens.isExhausted(),"\n")
+
 		return result
 
-	def accept(self, tokens):
+	def accept(self, tokens, level = 0):
 		index = tokens.getIndex()
+
+		### debug:
+		print('\t'*level + "RHSTree.accept(), Type:",self.levelType.name)
+		print('\t'*level + "Before Index:",index)
+
 		result = False
 		if self.levelType == RHSType.TERMINAL:
 			if self.node.getValue() == '':
 				result = True
-			elif self.node == tokens.currentToken():
+			elif (not tokens.isExhausted()) and self.node == tokens.currentToken():
 				tokens.nextToken()
 				result = True
 		elif self.levelType == RHSType.IDENTIFIER:
-			result = self.link.acceptMatch(tokens)
+			result = self.link.acceptMatch(tokens, level + 1)
 		elif self.levelType == RHSType.GROUP:
-			result = self.children[0].accept(tokens)
+			result = self.children[0].accept(tokens, level + 1)
 		elif self.levelType == RHSType.OPTIONAL:
-			result = self.children[0].accept(tokens) # ???
+			result = self.children[0].accept(tokens, level + 1) # ???
 		elif self.levelType == RHSType.REPEAT:
 			value = True
 			while value: # the greedy repeat...
-				value = self.children[0].accept(tokens)
+				value = self.children[0].accept(tokens, level + 1)
 			result = value
 		elif self.levelType == RHSType.CONCATENATION:
 			value = True
 			for child in self.children:
-				if not child.accept(tokens):
+				if not child.accept(tokens, level + 1):
 					value = False
 					break
 			result = value
 		elif self.levelType == RHSType.ALTERNATION:
 			for child in self.children[:-1]:
-				if child.accept(tokens):
+				if child.accept(tokens, level + 1):
 					result = True
 					break
 			if not result:
-				result = self.children[-1].accept(tokens)
+				result = self.children[-1].accept(tokens, level + 1)
 		if not result:
 			tokens.setIndex(index)
+
+		### debug:
+		print('\t'*level + "After  Index:",tokens.getIndex())
+		print('\t'*level + "result:",result)
+		print('\t'*level + "Is Exhausted:",tokens.isExhausted(),"\n")
+
 		return result
 
 	def popRightChild(self):
