@@ -2,25 +2,72 @@
 #tokenizer.py
 from errors import *
 from token import Token, TokenType
+import re
+
+class TokenizerTypeList(object):
+
+	def __init__(self):
+		self._typeList = []
+		self._indexLookup = {}
+
+	def __len__(self):
+		return len(self._typeList)
+
+	def addTokenType(self, tt):
+		if not isinstance(tt, TokenType):
+			raise TypeError
+		if tt.getName() not in self._indexLookup:
+			self._indexLookup[tt.getName()] = len(self)
+			self._typeList.append(tt)
+
+	def __getitem__(self, item):
+		if isinstance(item, int):
+			return self._typeList[item % len(self)]
+		else:
+			return self._typeList[self.indexOf(item)]
+
+	def indexOf(self, item):
+		if isinstance(item, TokenType):
+			return self._indexLookup[item.getName()]
+		else:
+			return self._indexLookup[item]
+
+	def __iter__(self):
+		return iter(self._typeList)
+
+	def __contains__(self, tt):
+		return (tt.getName() in self._indexLookup)
+
+def defaultGrammarTTL():
+	gTTL = TokenizerTypeList()
+	gTTL.addTokenType(TokenType("End", r';'))
+	gTTL.addTokenType(TokenType("Define", r'='))
+	gTTL.addTokenType(TokenType("Control", r'[()[\]{}|,]'))
+	gTTL.addTokenType(TokenType("Identifier", r'[a-zA-Z][a-zA-Z0-9_]*'))
+	gTTL.addTokenType(TokenType("Terminal", r'\'[^\']*\'|"[^"]*"'))
+	return gTTL
+
 
 class Tokenizer(object):
 
-	identifierType = TokenType("Identifier", r'[a-zA-Z][a-zA-Z0-9_]*')
-	controlType = TokenType("Control", r'[()[\]{}|,]')
-	defineType = TokenType("Define", r'=')
-	endType = TokenType("End", r';')
-	terminalType = TokenType("Terminal", r'[^\']*|[^"]*')
+#	identifierType = TokenType("Identifier", r'[a-zA-Z][a-zA-Z0-9_]*')
+#	controlType = TokenType("Control", r'[()[\]{}|,]')
+#	defineType = TokenType("Define", r'=')
+#	endType = TokenType("End", r';')
+#	terminalType = TokenType("Terminal", r'[^\']*|[^"]*')
 
-	def __init__(self, inData, allowEscapes = False):
+	def __init__(self, ttl = defaultGrammarTTL(), ignoreWhiteSpace = True):
 		self.tokens = []
 		self.index = 0
-		self.escapes = allowEscapes
 		self._exhausted = False
-		try:
-			self._createTokens(inData)
-		except TokenizerError as err:
-			print(err.message)
-			raise err
+		self.ttl = ttl
+		self._ignoreWS = ignoreWhiteSpace
+		self._wsRE = re.compile('\s+')
+#		try:
+#			self._createTokens(inData)
+#		except TokenizerError as err:
+#			print(err.message)
+#			raise err
 
 	def nextToken(self):
 		self.index += 1
@@ -65,14 +112,14 @@ class Tokenizer(object):
 		for t in self.tokens:
 			if t == splitToken:
 				if len(newTokens) > 0:
-					newTokenizer = Tokenizer('')
+					newTokenizer = Tokenizer(self.ttl, self._ignoreWS)
 					newTokenizer.resetFromTokenList(newTokens)
 					tokenizers.append(newTokenizer)
 					newTokens = []
 			else:
 				newTokens.append(t)
 		if len(newTokens) > 0:
-			newTokenizer = Tokenizer('')
+			newTokenizer = Tokenizer(self.ttl, self._ignoreWS)
 			tokenizers.append(newTokenizer.resetFromTokenList(newTokens))
 		return tokenizers
 
@@ -91,125 +138,44 @@ class Tokenizer(object):
 	def getTokenList(self):
 		return self.tokens
 
-	def _determineTokenType(self, tokenStr):
-		# terminalType is handled elsewhere
-		typeList = [Tokenizer.endType, Tokenizer.defineType, Tokenizer.controlType, Tokenizer.identifierType]
-		for tokenType in typeList:
+	def setTTL(self, ttl):
+		self.ttl = ttl
+
+	def getTTL(self):
+		return self.ttl
+
+	def setIgnoreWhiteSpace(self, value):
+		self._ignoreWS = bool(value)
+
+	def determineTokenType(self, tokenStr):
+		for tokenType in self.ttl:
 			if tokenType.isTypeOf(tokenStr):
 				return tokenType
 		raise UnknownTokenTypeError("Token '" + tokenStr + "' does not match any known tokenTypes!")
 
-	def _createTokens(self, rawTokens):
-		text = ''
-		if isinstance(rawTokens, str):
-			text = rawTokens
-		else: # a file or a list primarily
-			for line in rawTokens:
-				text += line
+	def tokenize(self, rawText):
+		self.tokens = []
+		text = rawText
 
-		# first tokenize qouted blocks individually.
-		if self.escapes:
-			blocks = self._handleQuotingWithEscapes(text)
-		else:
-			blocks = self._handleQuoting(text)
+		### do something about empty string...
 
-		for block in blocks:
-			if isinstance(block, Token):
-				self.tokens.append(block)
+		while len(text) > 0:
+			matchObj = None
+			if self._ignoreWS:
+				matchObj = self._wsRE.match(text)
+			if matchObj is None:
+				for tt in self.ttl:
+					ttRE = tt.getRE()
+					matchObj = ttRE.match(text)
+					if matchObj is not None:
+						if matchObj.end() > 0:
+							break
+				if matchObj is not None:
+					self.tokens.append(Token(text[:matchObj.end()], tt))
+					text = text[matchObj.end():]
+				else:
+					raise TokenizerNoMatchError("Beginning of text doesn't match any known TokenTypes:",text)
 			else:
-				# homogenize white-space
-				block = block.replace('\n',' ').replace('\t',' ')
-				# flatten white space
-				block = ' '.join(block.split(' '))
-				# split on white space
-				subBlocks = block.split(' ')
-				for subBlock in subBlocks:
-					if len(subBlock) > 0:
-						self.tokens.append(Token(subBlock, self._determineTokenType(subBlock)))
-
-	def _handleQuoting(self, rawText):
-		blocks = []
-
-		thisBlock = ''
-		quoteMatch = None
-
-		for char in rawText:
-			if char == '"' or char == "'":
-				if quoteMatch == None:
-					blocks.append(thisBlock)
-					thisBlock = ''
-					quoteMatch = char
-				elif char == quoteMatch:
-					blocks.append(Token(thisBlock, Tokenizer.terminalType, char))
-					thisBlock = ''
-					quoteMatch = None
-				else:
-					thisBlock += char
-			else:
-				thisBlock += char
-		if quoteMatch != None:
-			raise TokenizerQuotingError("Encountered Unmatched quote of type: " + quoteMatch)
-
-		if len(thisBlock) > 0:
-			blocks.append(thisBlock)
-
-		return blocks
-
-	def _handleQuotingWithEscapes(self, rawText):
-		blocks = []
-
-		escaping = False
-		thisBlock = ''
-
-		quoteMatch = None
-
-		for char in rawText:
-
-			if char == '\\':
-				if escaping:
-					thisBlock += '\\'
-					escaping = False
-				else:
-					escaping = True
-			elif char == 't':
-				if escaping:
-					thisBlock += '\t'
-					escaping = False
-				else:
-					thisBlock += 't'
-			elif char == 'n':
-				if escaping:
-					thisBlock += '\n'
-					escaping = False
-				else:
-					thisBlock += 'n'
-			elif char == '"' or char == "'":
-				if escaping:
-					if quoteMatch == None:
-						raise TokenizerQuotingError("Escaped quotes only allowed within quoted section!")
-					else:
-						thisBlock += char
-						escaping = False
-				else:
-					if quoteMatch == None:
-						blocks.append(thisBlock)
-						thisBlock = ''
-						quoteMatch = char
-					elif char == quoteMatch:
-						blocks.append(Token(thisBlock, terminalType, char))
-						thisBlock = ''
-						quoteMatch = None
-					else:
-						thisBlock += char
-			else:
-				thisBlock += char
-
-		if quoteMatch != None:
-			raise TokenizerQuotingError("Encountered Unmatched quote of type: " + quoteMatch)
-
-		if len(thisBlock) > 0:
-			blocks.append(thisBlock)
-
-		return blocks
+				text = text[matchObj.end():]
 
 
