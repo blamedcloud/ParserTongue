@@ -109,4 +109,4 @@ venv.bak/
 *.swn
 
 # testOut files
-testOut*.txt
+testing/*.txt

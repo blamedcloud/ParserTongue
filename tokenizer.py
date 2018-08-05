@@ -21,7 +21,7 @@ class Tokenizer(object):
 		except TokenizerError as err:
 			print(err.message)
 			raise err
-	
+
 	def nextToken(self):
 		self.index += 1
 		if self.index >= len(self.tokens):
@@ -45,6 +45,13 @@ class Tokenizer(object):
 
 	def getIndex(self):
 		return self.index
+
+	def setIndex(self, index):
+		if index >= 0 and index < len(self):
+			self.index = index
+			self._exhausted = False
+		else:
+			raise IndexError
 
 	def __len__(self):
 		return len(self.tokens)
@@ -90,7 +97,7 @@ class Tokenizer(object):
 		for tokenType in typeList:
 			if tokenType.isTypeOf(tokenStr):
 				return tokenType
-		raise UnknownTokenTypeError("Token '" + tokenStr + "' does not match any known tokenTypes!") 
+		raise UnknownTokenTypeError("Token '" + tokenStr + "' does not match any known tokenTypes!")
 
 	def _createTokens(self, rawTokens):
 		text = ''
@@ -99,21 +106,21 @@ class Tokenizer(object):
 		else: # a file or a list primarily
 			for line in rawTokens:
 				text += line
-		
+
 		# first tokenize qouted blocks individually.
 		if self.escapes:
 			blocks = self._handleQuotingWithEscapes(text)
 		else:
 			blocks = self._handleQuoting(text)
-	
+
 		for block in blocks:
 			if isinstance(block, Token):
 				self.tokens.append(block)
-			else:	
+			else:
 				# homogenize white-space
 				block = block.replace('\n',' ').replace('\t',' ')
 				# flatten white space
-				block = ' '.join(block.split(' '))				
+				block = ' '.join(block.split(' '))
 				# split on white space
 				subBlocks = block.split(' ')
 				for subBlock in subBlocks:
@@ -150,14 +157,14 @@ class Tokenizer(object):
 
 	def _handleQuotingWithEscapes(self, rawText):
 		blocks = []
-		
+
 		escaping = False
 		thisBlock = ''
 
 		quoteMatch = None
 
 		for char in rawText:
-		
+
 			if char == '\\':
 				if escaping:
 					thisBlock += '\\'
@@ -196,7 +203,7 @@ class Tokenizer(object):
 						thisBlock += char
 			else:
 				thisBlock += char
-			
+
 		if quoteMatch != None:
 			raise TokenizerQuotingError("Encountered Unmatched quote of type: " + quoteMatch)
 

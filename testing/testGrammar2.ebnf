@@ -1,0 +1,4 @@
+
+start = first | "" ;
+
+first = "a" , first , "b" | "a" , "b" ; 

@@ -17,7 +17,7 @@ class Grammar(object):
 		fullTokenizer = Tokenizer(full_text)
 		splitToken = Token(';', Tokenizer.endType)
 		if not fullTokenizer.getLastToken()	== splitToken:
-			raise GrammarParsingError("Found Text after last rule:\n\t" + rawRules[-1])
+			raise GrammarParsingError("Found Text after last rule! Did you forget ';'?")
 		ruleTokenizers = fullTokenizer.splitTokensOn(splitToken)
 
 		# debug:
@@ -60,6 +60,13 @@ class Grammar(object):
 		else:
 			raise GrammarParsingError("Cannot add start symbol: '" + str(startSymbol) + "', because it does not exist!")
 
+	def isInLanguage(self, tokens):
+		value = self.ruleDict[self.start].expectMatch(tokens)
+		if tokens.isExhausted():
+			return value
+		else:
+			return False
+
 class Rule(object):
 
 	def __init__(self, tokens):
@@ -72,6 +79,12 @@ class Rule(object):
 
 	def _parseOutComments(self):
 		pass
+
+	def expectMatch(self, tokens):
+		return self.rhsTree.expect(tokens)
+
+	def acceptMatch(self, tokens):
+		return self.rhsTree.accept(tokens)
 
 	def lhs(self):
 		return self.lhsToken
@@ -318,6 +331,78 @@ class RHSTree(object):
 			for child in self.children:
 				child.addLinkage(ruleDict)
 
+	def expect(self, tokens):
+		result = False
+		if self.levelType == RHSType.TERMINAL:
+			if self.node.getValue() == '':
+				result = True
+			elif self.node == tokens.currentToken():
+				tokens.nextToken()
+				result = True
+		elif self.levelType == RHSType.IDENTIFIER:
+			result = self.link.expectMatch(tokens)
+		elif self.levelType == RHSType.GROUP:
+			result = self.children[0].expect(tokens)
+		elif self.levelType == RHSType.OPTIONAL:
+			result = self.children[0].accept(tokens) # ???
+		elif self.levelType == RHSType.REPEAT:
+			value = True
+			while value: # the greedy repeat...
+				value = self.children[0].accept(tokens)
+			result = value
+		elif self.levelType == RHSType.CONCATENATION:
+			value = True
+			for child in self.children:
+				if not child.expect(tokens):
+					value = False
+					break
+			result = value
+		elif self.levelType == RHSType.ALTERNATION:
+			for child in self.children[:-1]:
+				if child.accept(tokens):
+					result = True
+					break
+			if not result:
+				result = self.children[-1].expect(tokens)
+		return result
+
+	def accept(self, tokens):
+		index = tokens.getIndex()
+		result = False
+		if self.levelType == RHSType.TERMINAL:
+			if self.node.getValue() == '':
+				result = True
+			elif self.node == tokens.currentToken():
+				tokens.nextToken()
+				result = True
+		elif self.levelType == RHSType.IDENTIFIER:
+			result = self.link.acceptMatch(tokens)
+		elif self.levelType == RHSType.GROUP:
+			result = self.children[0].accept(tokens)
+		elif self.levelType == RHSType.OPTIONAL:
+			result = self.children[0].accept(tokens) # ???
+		elif self.levelType == RHSType.REPEAT:
+			value = True
+			while value: # the greedy repeat...
+				value = self.children[0].accept(tokens)
+			result = value
+		elif self.levelType == RHSType.CONCATENATION:
+			value = True
+			for child in self.children:
+				if not child.accept(tokens):
+					value = False
+					break
+			result = value
+		elif self.levelType == RHSType.ALTERNATION:
+			for child in self.children[:-1]:
+				if child.accept(tokens):
+					result = True
+					break
+			if not result:
+				result = self.children[-1].accept(tokens)
+		if not result:
+			tokens.setIndex(index)
+		return result
 
 	def popRightChild(self):
 		if len(self.children) > 0:
