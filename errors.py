@@ -13,6 +13,12 @@ class TokenizerError(ParserTongueError):
 	pass
 
 
+class TokenInstantiationTypeError(TokenizerError):
+
+	def __init__(self, message):
+		self.message = message
+
+
 class UnknownTokenTypeError(TokenizerError):
 
 	def __init__(self, message):

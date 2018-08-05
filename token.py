@@ -5,12 +5,15 @@ import re
 
 class Token(object):
 
-	def __init__(self, string, tokenType, quoteChar = None):
+	def __init__(self, string, tokenType, fullText = None):
 		self.value = string
-		self._quoteChar = quoteChar
 		self.tokenType = tokenType
-		if not self.tokenType.isTypeOf(self.value):
-			raise TokenInstantiationTypeError("Token '" + self.value + "' is not of type '" + self.tokenType.getName() + "'")
+		if fullText is not None:
+			self._fullText = fullText
+		else:
+			self._fullText = self.value
+		if not self.tokenType.isTypeOf(self._fullText):
+			raise TokenInstantiationTypeError("Token '" + self._fullText + "' is not of type '" + self.tokenType.getName() + "'")
 
 	def getType(self):
 		return self.tokenType
@@ -19,11 +22,7 @@ class Token(object):
 		return self.value
 
 	def __str__(self):
-		if self._quoteChar == None:
-			quote = "'"
-		else:
-			quote = self._quoteChar
-		return '(' + str(self.tokenType) + ", "+ quote + self.value + quote + ")"
+		return '(' + str(self.tokenType) + ", '"+ self.value + "')"
 
 	def __repr__(self):
 		return str(self)
@@ -41,7 +40,7 @@ class Token(object):
 		return result
 
 	def copy(self):
-		return Token(self.value, self.tokenType, self._quoteChar)
+		return Token(self.value, self.tokenType, self._fullText)
 
 
 class TokenType(object):
@@ -65,15 +64,15 @@ class TokenType(object):
 		if isinstance(other, TokenType):
 			if self.name != other.name:
 				result = False
-			if self.pattern != other.pattern:
-				result = False
+#			if self.pattern != other.pattern:
+#				result = False
 		else:
 			if self.name != str(other):
 				result = False
 		return result
 
 	def __str__(self):
-		return self.name
+		return "(" + str(self.name) + ", " + str(self.pattern) + ")"
 
 	def __repr__(self):
 		return str(self)

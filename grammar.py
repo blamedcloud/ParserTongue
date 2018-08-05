@@ -61,8 +61,8 @@ class Grammar(object):
 		else:
 			raise GrammarParsingError("Cannot add start symbol: '" + str(startSymbol) + "', because it does not exist!")
 
-	def isInLanguage(self, tokens):
-		value = self.ruleDict[self.start].expectMatch(tokens)
+	def isInLanguage(self, tokens, debug = False):
+		value = self.ruleDict[self.start].expectMatch(tokens,0, debug)
 		if tokens.isExhausted():
 			return value
 		else:
@@ -81,11 +81,11 @@ class Rule(object):
 	def _parseOutComments(self):
 		pass
 
-	def expectMatch(self, tokens, level = 0):
-		return self.rhsTree.expect(tokens, level)
+	def expectMatch(self, tokens, level = 0, debug = False):
+		return self.rhsTree.expect(tokens, level, debug)
 
-	def acceptMatch(self, tokens, level = 0):
-		return self.rhsTree.accept(tokens, level)
+	def acceptMatch(self, tokens, level = 0, debug = False):
+		return self.rhsTree.accept(tokens, level, debug)
 
 	def lhs(self):
 		return self.lhsToken
@@ -284,7 +284,7 @@ def getRHSSingleTypeFromTokenValue(tokenValue):
 	elif tokenValue == '{':
 		return RHSType.REPEAT
 	elif tokenValue == '[':
-		return RHSTYPE.OPTIONAL
+		return RHSType.OPTIONAL
 	raise RuleParsingError("ERROR Cannot determine RHSType of kind SINGLE from token: '" + tokenValue + "'")
 
 def getRHSListTypeFromTokenValue(tokenValue):
@@ -336,99 +336,109 @@ class RHSTree(object):
 			for child in self.children:
 				child.addLinkage(ruleDict)
 
-	def expect(self, tokens, level = 0):
+	def expect(self, tokens, level = 0, debug = False):
 
-		### debug:
-		index = tokens.getIndex()
-		print('\t'*level + "RHSTree.expect(), Type:",self.levelType.name)
-		print('\t'*level + "Before Index:",index)
+		if debug:
+			index = tokens.getIndex()
+			print('\t'*level + "RHSTree.expect(), Type:", self.levelType.name, "; Level:",level)
+			if self.levelKind == RHSKind.LEAF:
+				print('\t'*level + "NODE:", str(self.node))
+			print('\t'*level + "Before Index:",index)
+			print('\t'*level + "Current Token:",str(tokens.currentToken()))
 
 		result = False
 		if self.levelType == RHSType.TERMINAL:
 			if self.node.getValue() == '':
 				result = True
-			elif (not tokens.isExhausted()) and self.node == tokens.currentToken():
+			elif (not tokens.isExhausted()) and self.node.getValue() == tokens.currentToken().getValue():
 				tokens.nextToken()
 				result = True
 		elif self.levelType == RHSType.IDENTIFIER:
-			result = self.link.expectMatch(tokens, level + 1)
+			result = self.link.expectMatch(tokens, level + 1, debug)
 		elif self.levelType == RHSType.GROUP:
-			result = self.children[0].expect(tokens, level + 1)
+			result = self.children[0].expect(tokens, level + 1, debug)
 		elif self.levelType == RHSType.OPTIONAL:
-			result = self.children[0].accept(tokens, level + 1) # ???
+			self.children[0].accept(tokens, level + 1, debug)
+			result = True # accept will gobble tokens or not, but regardless this always passes
 		elif self.levelType == RHSType.REPEAT:
 			value = True
-			while value: # the greedy repeat...
-				value = self.children[0].accept(tokens, level + 1)
-			result = value
+			while not tokens.isExhausted() and value: # the greedy repeat...
+				value = self.children[0].accept(tokens, level + 1, debug)
+			result = True # similar to OPTIONAL case
 		elif self.levelType == RHSType.CONCATENATION:
 			value = True
 			for child in self.children:
-				if not child.expect(tokens, level + 1):
+				if not child.expect(tokens, level + 1, debug):
 					value = False
 					break
 			result = value
 		elif self.levelType == RHSType.ALTERNATION:
 			for child in self.children[:-1]:
-				if child.accept(tokens, level + 1):
+				if child.accept(tokens, level + 1, debug):
 					result = True
 					break
 			if not result:
-				result = self.children[-1].expect(tokens, level + 1)
+				result = self.children[-1].expect(tokens, level + 1, debug)
 
-		### debug:
-		print('\t'*level + "After  Index:",tokens.getIndex())
-		print('\t'*level + "result:",result)
-		print('\t'*level + "Is Exhausted:",tokens.isExhausted(),"\n")
+		if debug:
+			print('\t'*level + "After  Index:",tokens.getIndex())
+			print('\t'*level + "result:",result)
+			print('\t'*level + "Is Exhausted:",tokens.isExhausted(),"\n")
 
 		return result
 
-	def accept(self, tokens, level = 0):
+	def accept(self, tokens, level = 0, debug = False):
 		index = tokens.getIndex()
+		exhausted = tokens.isExhausted()
 
-		### debug:
-		print('\t'*level + "RHSTree.accept(), Type:",self.levelType.name)
-		print('\t'*level + "Before Index:",index)
+		if debug:
+			print('\t'*level + "RHSTree.accept(), Type:",self.levelType.name, "; Level:",level)
+			if self.levelKind == RHSKind.LEAF:
+				print('\t'*level + "NODE:", str(self.node))
+			print('\t'*level + "Before Index:",index)
+			print('\t'*level + "Current Token:",str(tokens.currentToken()))
 
 		result = False
 		if self.levelType == RHSType.TERMINAL:
 			if self.node.getValue() == '':
 				result = True
-			elif (not tokens.isExhausted()) and self.node == tokens.currentToken():
+			elif (not tokens.isExhausted()) and self.node.getValue() == tokens.currentToken().getValue():
 				tokens.nextToken()
 				result = True
 		elif self.levelType == RHSType.IDENTIFIER:
-			result = self.link.acceptMatch(tokens, level + 1)
+			result = self.link.acceptMatch(tokens, level + 1, debug)
 		elif self.levelType == RHSType.GROUP:
-			result = self.children[0].accept(tokens, level + 1)
+			result = self.children[0].accept(tokens, level + 1, debug)
 		elif self.levelType == RHSType.OPTIONAL:
-			result = self.children[0].accept(tokens, level + 1) # ???
+			self.children[0].accept(tokens, level + 1, debug)
+			result = True
 		elif self.levelType == RHSType.REPEAT:
 			value = True
-			while value: # the greedy repeat...
-				value = self.children[0].accept(tokens, level + 1)
-			result = value
+			while not tokens.isExhausted() and value: # the greedy repeat...
+				value = self.children[0].accept(tokens, level + 1, debug)
+			result = True
 		elif self.levelType == RHSType.CONCATENATION:
 			value = True
 			for child in self.children:
-				if not child.accept(tokens, level + 1):
+				if not child.accept(tokens, level + 1, debug):
 					value = False
 					break
 			result = value
 		elif self.levelType == RHSType.ALTERNATION:
 			for child in self.children[:-1]:
-				if child.accept(tokens, level + 1):
+				if child.accept(tokens, level + 1, debug):
 					result = True
 					break
 			if not result:
-				result = self.children[-1].accept(tokens, level + 1)
-		if not result:
-			tokens.setIndex(index)
+				result = self.children[-1].accept(tokens, level + 1, debug)
 
-		### debug:
-		print('\t'*level + "After  Index:",tokens.getIndex())
-		print('\t'*level + "result:",result)
-		print('\t'*level + "Is Exhausted:",tokens.isExhausted(),"\n")
+		if not result:
+			tokens.setIndex(index, exhausted)
+
+		if debug:
+			print('\t'*level + "After  Index:",tokens.getIndex())
+			print('\t'*level + "result:",result)
+			print('\t'*level + "Is Exhausted:",tokens.isExhausted(),"\n")
 
 		return result
 

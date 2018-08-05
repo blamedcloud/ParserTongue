@@ -16,9 +16,10 @@ def tokenizerTest():
 		tokens = tokenizer.Tokenizer(FILE)
 	print(tokens)
 
-def parserTest(grammarFile, testFile):
+def parserTest(grammarFile, testString, _debug = False):
 	p = parser.Parser(grammarFile)
-	if p.parse(testFile):
+	p.setAlphabet('ab')
+	if p.parse(testString, debug = _debug):
 		print("Test String in Language!")
 	else:
 		print("Test String NOT in Language!")
@@ -31,6 +32,11 @@ if __name__ == "__main__":
 		grammarFile = sys.argv[1]
 		testFile = sys.argv[2]
 		parserTest(grammarFile, testFile)
+	elif len(sys.argv) == 4:
+		print('Test')
+		grammarFile = sys.argv[1]
+		testFile = sys.argv[2]
+		parserTest(grammarFile, testFile, True)
 	else:
 		tokenizerTest()
 

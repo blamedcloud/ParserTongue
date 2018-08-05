@@ -38,15 +38,28 @@ class TokenizerTypeList(object):
 	def __contains__(self, tt):
 		return (tt.getName() in self._indexLookup)
 
+	def __str__(self):
+		value = "TokenizerTypeList: ["
+		for tt in self:
+			value += str(tt) + ", "
+		value = value[:-2] # get rid of ', '
+		value += "]"
+		return value
+
 def defaultGrammarTTL():
 	gTTL = TokenizerTypeList()
 	gTTL.addTokenType(TokenType("End", r';'))
 	gTTL.addTokenType(TokenType("Define", r'='))
 	gTTL.addTokenType(TokenType("Control", r'[()[\]{}|,]'))
 	gTTL.addTokenType(TokenType("Identifier", r'[a-zA-Z][a-zA-Z0-9_]*'))
-	gTTL.addTokenType(TokenType("Terminal", r'\'[^\']*\'|"[^"]*"'))
+	gTTL.addTokenType(TokenType("Terminal", r'\'([^\']*)\'|"([^"]*)"'))
 	return gTTL
 
+def getTTLForAlphabet(alphabet):
+	alphTTL = TokenizerTypeList()
+	for letter in alphabet:
+		alphTTL.addTokenType(TokenType(letter, letter))
+	return alphTTL
 
 class Tokenizer(object):
 
@@ -93,10 +106,10 @@ class Tokenizer(object):
 	def getIndex(self):
 		return self.index
 
-	def setIndex(self, index):
+	def setIndex(self, index, wasExhausted = False):
 		if index >= 0 and index < len(self):
 			self.index = index
-			self._exhausted = False
+			self._exhausted = wasExhausted
 		else:
 			raise IndexError
 
@@ -171,10 +184,18 @@ class Tokenizer(object):
 						if matchObj.end() > 0:
 							break
 				if matchObj is not None:
-					self.tokens.append(Token(text[:matchObj.end()], tt))
+					groups = matchObj.groups()
+					matchText = matchObj.group(0)
+					if len(groups) > 0: # Concatenate groups together.
+						sumtext = ''
+						for g in groups:
+							if g is not None:
+								sumtext += str(g)
+						matchText = sumtext
+					self.tokens.append(Token(matchText, tt, matchObj.group(0)))
 					text = text[matchObj.end():]
 				else:
-					raise TokenizerNoMatchError("Beginning of text doesn't match any known TokenTypes:",text)
+					raise TokenizerNoMatchError("Beginning of text doesn't match any known TokenTypes: " + text)
 			else:
 				text = text[matchObj.end():]
 

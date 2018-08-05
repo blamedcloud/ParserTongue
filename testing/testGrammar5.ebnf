@@ -1,0 +1,6 @@
+
+start = {equal}, onlyb , {equal} ; 
+
+equal = 'a','b' | 'b','a' | 'a' , equal , 'b' | 'b' , equal , 'a' ;
+
+onlyb = 'b', onlyb | 'b' ;
