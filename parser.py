@@ -17,6 +17,10 @@ class Parser(object):
 		self.alphabet = alphabet
 		self.ttl = getTTLForAlphabet(self.alphabet)
 
+	def getGrammarAlphabet(self):
+		self.alphabet = self.grammar.getAlphabet()
+		self.ttl = getTTLForAlphabet(self.alphabet)
+
 	def parse(self, raw, ignoreWS = False, debug = False):
 		tokens = Tokenizer(self.ttl, ignoreWS)
 		tokens.tokenize(raw)

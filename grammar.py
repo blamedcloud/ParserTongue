@@ -2,8 +2,9 @@
 #grammar.py
 from errors import *
 from token import Token, TokenType
-from tokenizer import Tokenizer, defaultGrammarTTL
+from tokenizer import Tokenizer, defaultGrammarTTL, getTTLForAlphabet
 from enum import Enum
+from smallestStrings import smallestStrGen
 
 class Grammar(object):
 
@@ -68,6 +69,32 @@ class Grammar(object):
 		else:
 			return False
 
+	def getAlphabet(self):
+		alphabet = []
+		for rule in self.rules:
+			terminals = rule.getTerminals()
+			for t in terminals:
+				if t not in alphabet:
+					alphabet.append(t)
+		return sorted(alphabet, key=lambda x: len(x), reverse=True)
+
+	def classifyFirstNStrings(self, number, ignoreWS = True):
+		alphabet = self.getAlphabet()
+		tokenizer = Tokenizer(getTTLForAlphabet(alphabet), ignoreWS)
+		classification = {}
+		if '' in alphabet:
+			tokenizer.tokenize('')
+			classification[''] = self.isInLanguage(tokenizer)
+			alphabet.remove('')
+			number -= 1
+		stringGen = smallestStrGen(alphabet, True)()
+		while number > 0:
+			s = next(stringGen)
+			tokenizer.tokenize(s)
+			classification[s] = self.isInLanguage(tokenizer)
+			number -= 1
+		return classification
+
 class Rule(object):
 
 	def __init__(self, tokens):
@@ -86,6 +113,9 @@ class Rule(object):
 
 	def acceptMatch(self, tokens, level = 0, debug = False):
 		return self.rhsTree.accept(tokens, level, debug)
+
+	def getTerminals(self):
+		return self.rhsTree.nonLinkedTerminals()
 
 	def lhs(self):
 		return self.lhsToken
@@ -441,6 +471,18 @@ class RHSTree(object):
 			print('\t'*level + "Is Exhausted:",tokens.isExhausted(),"\n")
 
 		return result
+
+	def nonLinkedTerminals(self):
+		terminals = []
+		if self.levelType == RHSType.TERMINAL:
+			terminals.append(self.node.getValue())
+		elif self.levelType != RHSType.IDENTIFIER:
+			for child in self.children:
+				childTerminals = child.nonLinkedTerminals()
+				for t in childTerminals:
+					if t not in terminals:
+						terminals.append(t)
+		return terminals
 
 	def popRightChild(self):
 		if len(self.children) > 0:

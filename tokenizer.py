@@ -168,6 +168,8 @@ class Tokenizer(object):
 
 	def tokenize(self, rawText):
 		self.tokens = []
+		self.index = 0
+		self._exhausted = False
 		text = rawText
 
 		### do something about empty string...

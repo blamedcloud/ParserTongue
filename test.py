@@ -16,9 +16,19 @@ def tokenizerTest():
 		tokens = tokenizer.Tokenizer(FILE)
 	print(tokens)
 
+def grammarEnumeration(grammarFile, number):
+	g = grammar.Grammar(grammarFile)
+	classification = g.classifyFirstNStrings(number)
+	notInLang = sorted([k for k, v in classification.items() if not v], key=lambda x: (len(x),x))
+	isInLang = sorted([k for k, v in classification.items() if v], key=lambda x: (len(x), x))
+	print("In Language:")
+	print('\t' + str(isInLang))
+	print("Not In Language:")
+	print('\t' + str(notInLang))
+
 def parserTest(grammarFile, testString, _debug = False):
 	p = parser.Parser(grammarFile)
-	p.setAlphabet('ab')
+	p.getGrammarAlphabet()
 	if p.parse(testString, debug = _debug):
 		print("Test String in Language!")
 	else:
@@ -30,13 +40,17 @@ if __name__ == "__main__":
 		grammarTest(inFile)
 	elif len(sys.argv) == 3:
 		grammarFile = sys.argv[1]
-		testFile = sys.argv[2]
-		parserTest(grammarFile, testFile)
+		testStr = sys.argv[2]
+		try:
+			testNum = int(testStr)
+			grammarEnumeration(grammarFile, testNum)
+		except ValueError:
+			parserTest(grammarFile, testStr)
 	elif len(sys.argv) == 4:
 		print('Test')
 		grammarFile = sys.argv[1]
-		testFile = sys.argv[2]
-		parserTest(grammarFile, testFile, True)
+		testStr = sys.argv[2]
+		parserTest(grammarFile, testStr, True)
 	else:
 		tokenizerTest()
 
