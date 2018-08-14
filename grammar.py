@@ -63,11 +63,12 @@ class Grammar(object):
 			raise GrammarParsingError("Cannot add start symbol: '" + str(startSymbol) + "', because it does not exist!")
 
 	def isInLanguage(self, tokens, debug = False):
-		value = self.ruleDict[self.start].expectMatch(tokens,0, debug)
-		if tokens.isExhausted():
-			return value
-		else:
-			return False
+		for value in self.ruleDict[self.start].expectMatch(tokens,0, debug):
+			if tokens.isExhausted() and value:
+				return True
+			else:
+				tokens.setIndex(0, False)
+		return False
 
 	def getAlphabet(self):
 		alphabet = []
@@ -109,10 +110,12 @@ class Rule(object):
 		pass
 
 	def expectMatch(self, tokens, level = 0, debug = False):
-		return self.rhsTree.expect(tokens, level, debug)
+		for value in self.rhsTree.expect(tokens, level, debug):
+			yield value
 
 	def acceptMatch(self, tokens, level = 0, debug = False):
-		return self.rhsTree.accept(tokens, level, debug)
+		for value in self.rhsTree.accept(tokens, level, debug):
+			yield value
 
 	def getTerminals(self):
 		return self.rhsTree.nonLinkedTerminals()
@@ -367,55 +370,83 @@ class RHSTree(object):
 				child.addLinkage(ruleDict)
 
 	def expect(self, tokens, level = 0, debug = False):
+		index = tokens.getIndex()
+		exhausted = tokens.isExhausted()
 
 		if debug:
-			index = tokens.getIndex()
 			print('\t'*level + "RHSTree.expect(), Type:", self.levelType.name, "; Level:",level)
 			if self.levelKind == RHSKind.LEAF:
 				print('\t'*level + "NODE:", str(self.node))
 			print('\t'*level + "Before Index:",index)
 			print('\t'*level + "Current Token:",str(tokens.currentToken()))
 
-		result = False
 		if self.levelType == RHSType.TERMINAL:
 			if self.node.getValue() == '':
-				result = True
+				yield True
 			elif (not tokens.isExhausted()) and self.node.getValue() == tokens.currentToken().getValue():
 				tokens.nextToken()
-				result = True
+				yield True
 		elif self.levelType == RHSType.IDENTIFIER:
-			result = self.link.expectMatch(tokens, level + 1, debug)
+			for value in self.link.expectMatch(tokens, level + 1, debug):
+				if value:
+					yield value
+				tokens.setIndex(index, exhausted)
 		elif self.levelType == RHSType.GROUP:
-			result = self.children[0].expect(tokens, level + 1, debug)
+			for value in self.children[0].expect(tokens, level + 1, debug):
+				if value:
+					yield value
+				tokens.setIndex(index, exhausted)
 		elif self.levelType == RHSType.OPTIONAL:
-			self.children[0].accept(tokens, level + 1, debug)
-			result = True # accept will gobble tokens or not, but regardless this always passes
+			yield True	# First try not parsing this. If the execution gets back to this point,
+						# then we need to actually use this option. Thus expect.
+			for value in self.children[0].expect(tokens, level + 1, debug):
+				if value:
+					yield value
+				tokens.setIndex(index, exhausted)
 		elif self.levelType == RHSType.REPEAT:
-			value = True
-			while not tokens.isExhausted() and value: # the greedy repeat...
-				value = self.children[0].accept(tokens, level + 1, debug)
-			result = True # similar to OPTIONAL case
+			yield True
+			# if we get to this point we need at least one instance of this pattern.
+			value = self.children[0].expect(tokens, level + 1, debug)
+			while (not tokens.isExhausted()) and value:
+				yield value
+				value = self.children[0].expect(tokens, level + 1, debug)
+			if not value:
+				tokens.setIndex(index, exhausted)
+			yield value
 		elif self.levelType == RHSType.CONCATENATION:
-			value = True
-			for child in self.children:
-				if not child.expect(tokens, level + 1, debug):
-					value = False
-					break
-			result = value
+			for value in self.expectConcat(tokens, 0, level + 1, debug):
+				if value:
+					yield value
+				tokens.setIndex(index, exhausted)
 		elif self.levelType == RHSType.ALTERNATION:
-			for child in self.children[:-1]:
-				if child.accept(tokens, level + 1, debug):
-					result = True
-					break
-			if not result:
-				result = self.children[-1].expect(tokens, level + 1, debug)
+			for child in self.children:
+				for value in child.expect(tokens, level + 1, debug):
+					if value:
+						yield value
+					tokens.setIndex(index, exhausted)
 
 		if debug:
 			print('\t'*level + "After  Index:",tokens.getIndex())
-			print('\t'*level + "result:",result)
+			print('\t'*level + "result:",False)
 			print('\t'*level + "Is Exhausted:",tokens.isExhausted(),"\n")
 
-		return result
+		yield False
+
+	def expectConcat(self, tokens, startChild, level = 0, debug = False):
+		index = tokens.getIndex()
+		exhausted = tokens.isExhausted()
+		child = self.children[startChild]
+		for value in child.expect(tokens, level, debug):
+			if value:
+				if startChild + 1 == len(self):
+					yield value
+				else:
+					for childValue in self.expectConcat(tokens, startChild + 1, level, debug):
+						if value:
+							yield value
+						tokens.setIndex(index, exhausted)
+			tokens.setIndex(index, exhausted)
+		yield False
 
 	def accept(self, tokens, level = 0, debug = False):
 		index = tokens.getIndex()
