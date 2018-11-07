@@ -67,7 +67,7 @@ class Grammar(object):
 			if tokens.isExhausted() and value:
 				return True
 			else:
-				tokens.setIndex(0, False)
+				tokens.setIndex(0, False) # this seems wrong
 		return False
 
 	def getAlphabet(self):
