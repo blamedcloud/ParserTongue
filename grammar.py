@@ -79,20 +79,20 @@ class Grammar(object):
 					alphabet.append(t)
 		return sorted(alphabet, key=lambda x: len(x), reverse=True)
 
-	def classifyFirstNStrings(self, number, ignoreWS = True):
+	def classifyFirstNStrings(self, number, ignoreWS = True, debug = False):
 		alphabet = self.getAlphabet()
 		tokenizer = Tokenizer(getTTLForAlphabet(alphabet), ignoreWS)
 		classification = {}
 		if '' in alphabet:
 			tokenizer.tokenize('')
-			classification[''] = self.isInLanguage(tokenizer)
+			classification[''] = self.isInLanguage(tokenizer, debug)
 			alphabet.remove('')
 			number -= 1
 		stringGen = smallestStrGen(alphabet, True)()
 		while number > 0:
 			s = next(stringGen)
 			tokenizer.tokenize(s)
-			classification[s] = self.isInLanguage(tokenizer)
+			classification[s] = self.isInLanguage(tokenizer, debug)
 			number -= 1
 		return classification
 
@@ -378,10 +378,13 @@ class RHSTree(object):
 			if self.levelKind == RHSKind.LEAF:
 				print('\t'*level + "NODE:", str(self.node))
 			print('\t'*level + "Before Index:",index)
+			print('\t'*level + "Before Exhaust:",exhausted)
 			print('\t'*level + "Current Token:",str(tokens.currentToken()))
 
 		if self.levelType == RHSType.TERMINAL:
 			if self.node.getValue() == '':
+				if len(tokens) == 0:
+					tokens.setIndex(0,True) # exhausts the empty sting, so it will pass (if allowed)
 				yield True
 			elif (not tokens.isExhausted()) and self.node.getValue() == tokens.currentToken().getValue():
 				tokens.nextToken()
@@ -406,13 +409,21 @@ class RHSTree(object):
 		elif self.levelType == RHSType.REPEAT:
 			yield True
 			# if we get to this point we need at least one instance of this pattern.
-			value = self.children[0].expect(tokens, level + 1, debug)
-			while (not tokens.isExhausted()) and value:
-				yield value
-				value = self.children[0].expect(tokens, level + 1, debug)
-			if not value:
+			value = True
+			for value in self.children[0].expect(tokens, level + 1, debug):
+				if value and (not tokens.isExhausted()):
+					newIndex = tokens.getIndex()
+					newExhaust = tokens.isExhausted()
+					# create a new instance of the repeat pattern
+					# since the first thing this does is yield True,
+					# we don't do it here.
+					for newValue in self.expect(tokens,level,debug):
+						if newValue:
+							yield newValue
+						tokens.setIndex(newIndex, newExhaust)
+				elif value and tokens.isExhausted():
+					yield value
 				tokens.setIndex(index, exhausted)
-			yield value
 		elif self.levelType == RHSType.CONCATENATION:
 			for value in self.expectConcat(tokens, 0, level + 1, debug):
 				if value:
@@ -442,8 +453,8 @@ class RHSTree(object):
 					yield value
 				else:
 					for childValue in self.expectConcat(tokens, startChild + 1, level, debug):
-						if value:
-							yield value
+						if childValue:
+							yield childValue
 						tokens.setIndex(index, exhausted)
 			tokens.setIndex(index, exhausted)
 		yield False

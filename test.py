@@ -16,9 +16,9 @@ def tokenizerTest():
 		tokens = tokenizer.Tokenizer(FILE)
 	print(tokens)
 
-def grammarEnumeration(grammarFile, number):
+def grammarEnumeration(grammarFile, number, debug = False):
 	g = grammar.Grammar(grammarFile)
-	classification = g.classifyFirstNStrings(number)
+	classification = g.classifyFirstNStrings(number, debug = debug)
 	notInLang = sorted([k for k, v in classification.items() if not v], key=lambda x: (len(x),x))
 	isInLang = sorted([k for k, v in classification.items() if v], key=lambda x: (len(x), x))
 	print("In Language:")
@@ -34,6 +34,16 @@ def parserTest(grammarFile, testString, _debug = False):
 	else:
 		print("Test String NOT in Language!")
 
+def isInGrammar(grammarFile, testString, debug = False):
+	g = grammar.Grammar(grammarFile)
+	alphabet = g.getAlphabet()
+	tokens = tokenizer.Tokenizer(tokenizer.getTTLForAlphabet(alphabet), True)
+	tokens.tokenize(testString)
+	if g.isInLanguage(tokens, debug):
+		print("Test String in Language!")
+	else:
+		print("Test String NOT in Language!")
+
 if __name__ == "__main__":
 	if len(sys.argv) == 2:
 		inFile = sys.argv[1]
@@ -41,16 +51,24 @@ if __name__ == "__main__":
 	elif len(sys.argv) == 3:
 		grammarFile = sys.argv[1]
 		testStr = sys.argv[2]
+		debug = False
 		try:
 			testNum = int(testStr)
-			grammarEnumeration(grammarFile, testNum)
+			if testNum < 0:
+				debug = True
+				testNum = -1*testNum
+			grammarEnumeration(grammarFile, testNum, debug)
 		except ValueError:
 			parserTest(grammarFile, testStr)
 	elif len(sys.argv) == 4:
 		print('Test')
 		grammarFile = sys.argv[1]
 		testStr = sys.argv[2]
-		parserTest(grammarFile, testStr, True)
+		debug = False
+		if sys.argv[3] == 'True':
+			debug = True
+#		parserTest(grammarFile, testStr, True)
+		isInGrammar(grammarFile, testStr, debug)
 	else:
 		tokenizerTest()
 

@@ -81,7 +81,10 @@ class Tokenizer(object):
 		self.index += 1
 		if self.index >= len(self.tokens):
 			self._exhausted = True
-			self.index = len(self.tokens)-1
+			if len(self) > 0:
+				self.index = len(self.tokens)-1
+			else:
+				self.index = 0
 			return False
 		return True
 
@@ -121,7 +124,7 @@ class Tokenizer(object):
 		return len(self.tokens)
 
 	def __str__(self):
-		return str(self.tokens)
+		return str(self.tokens) + ';index=' + str(self.index) + ';exhausted?' + str(self._exhausted)
 
 	def splitTokensOn(self, splitToken):
 		tokenizers = []
