@@ -71,6 +71,35 @@ class Grammar(object):
 					return True
 		return False
 
+	def getValidStringGen(self, maxIter = None, ignoreWS = True, debug = False):
+		def validStrGen():
+			(isInfinite, treeSize) = self.ruleDict[self.start].walk()
+			iters = 0
+			alphabet = self.getAlphabet()
+			if '' not in alphabet:
+				alphabet.append('')
+			tokenizer = Tokenizer(getTTLForAlphabet(alphabet), ignoreWS)
+			tokenizer.tokenize('')
+			if self.isInLanguage(tokenizer, debug):
+				yield ''
+			iters += 1
+			alphabet.remove('')
+			if maxIter is None and not isInfinite:
+				maxIter = (len(alphabet)**treeSize) + 1
+			finished = False
+			if (maxIter is not None) and iters >= maxIter:
+				finished = True
+			testStringGen = smallestStrGen(alphabet, True)()
+			while not finished:
+				testStr = next(testStringGen)
+				tokenizer.tokenize(testStr)
+				if self.isInLanguage(tokenizer, debug):
+					yield testStr
+				iters += 1
+				if (maxIter is not None) and iters >= maxIter:
+					finished = True
+		return validStrGen
+
 	def getAlphabet(self):
 		alphabet = []
 		for rule in self.rules:
@@ -98,6 +127,7 @@ class Grammar(object):
 			number -= 1
 		return classification
 
+
 class Rule(object):
 
 	def __init__(self, tokens):
@@ -114,6 +144,22 @@ class Rule(object):
 	def expectMatch(self, tokens, level = 0, debug = False):
 		for value in self.rhsTree.expect(tokens, level, debug):
 			yield value
+
+	def walk(self, prevIdentifiers = None):
+		if prevIdentifiers is not None:
+			if self.lhsToken in prevIdentifiers:
+				# if there is a recursive loop of identifiers,
+				# we assume the language generated is infinite
+				# this might not be the case, but it *should*
+				# be fine for non-pathalogical examples.
+				# For example, it probably runs forever on a
+				# left-recursive rule (which we can't parse anyway)
+				return (True, -1)
+			else:
+				identifierList = prevIdentifiers + [self.lhsToken]
+				return self.rhsTree.walkTree(identifierList)
+		else:
+			return self.rhsTree.walkTree([self.lhsToken])
 
 	def getTerminals(self):
 		return self.rhsTree.nonLinkedTerminals()
@@ -454,6 +500,42 @@ class RHSTree(object):
 						tokens.setIndex(index, exhausted)
 			tokens.setIndex(index, exhausted)
 		yield False
+
+	def walkTree(prevIdentifiers):
+		isInfinite = False
+		treeSize = 0
+		if self.levelType == RHSType.TERMINAL:
+			treeSize += 1
+		elif self.levelType == RHSType.IDENTIFIER:
+			(isInfinite, treeSize) = self.link.walk(prevIdentifiers)
+		elif self.levelType == RHSType.GROUP:
+			(isInfinite, treeSize) = self.children[0].walkTree(prevIdentifiers)
+		elif self.levelType == RHSType.OPTIONAL:
+			(isInfinite, treeSize) = self.children[0].walkTree(prevIdentifiers)
+		elif self.levelType == RHSType.REPEAT:
+			(isInf, size) = self.children[0].walkTree(prevIdentifiers)
+			if isInf or size >= 1:
+				isInfinite = True
+				treeSize = -1
+		elif self.levelType == RHSType.CONCATENATION:
+			for child in self.children:
+				(child_isInf, childSize) = child.walkTree(prevIdentifiers)
+				if child_isInf:
+					isInfinite = True
+					treeSize = -1
+					break
+				treeSize += childSize
+		elif self.levelType == RHSType.ALTERNATION:
+			for child in self.children:
+				(child_isInf, childSize) = child.walkTree(prevIdentifiers)
+				if child_isInf:
+					isInfinite = True
+					treeSize = -1
+					break
+				if childSize > treeSize:
+					treeSize = childSize
+		return (isInfinite, treeSize)
+
 
 	def nonLinkedTerminals(self):
 		terminals = []

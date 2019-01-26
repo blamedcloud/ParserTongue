@@ -44,7 +44,13 @@ def isInGrammar(grammarFile, testString, debug = False):
 	else:
 		print("Test String NOT in Language!")
 
-if __name__ == "__main__":
+def grammarGen(grammarFile, debug = False):
+	g = grammar.Grammar(grammarFile)
+	gen = g.validStrGen(debug = debug)
+	while raw_input() != 'q':
+		print(next(gen))
+
+def main1():
 	if len(sys.argv) == 2:
 		inFile = sys.argv[1]
 		grammarTest(inFile)
@@ -72,3 +78,6 @@ if __name__ == "__main__":
 	else:
 		tokenizerTest()
 
+
+if __name__ == "__main__":
+	main1()
