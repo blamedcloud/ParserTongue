@@ -381,8 +381,6 @@ class RHSTree(object):
 
 		if self.levelType == RHSType.TERMINAL:
 			if self.node.getValue() == '':
-		#		if len(tokens) == 0:
-		#			tokens.setIndex(0,True) # exhausts the empty sting, so it will pass (if allowed)
 				yield True
 			elif (not tokens.isExhausted()) and self.node.getValue() == tokens.currentToken().getValue():
 				tokens.nextToken()
