@@ -113,10 +113,6 @@ class Rule(object):
 		for value in self.rhsTree.expect(tokens, level, debug):
 			yield value
 
-	def acceptMatch(self, tokens, level = 0, debug = False):
-		for value in self.rhsTree.accept(tokens, level, debug):
-			yield value
-
 	def getTerminals(self):
 		return self.rhsTree.nonLinkedTerminals()
 
@@ -458,61 +454,6 @@ class RHSTree(object):
 						tokens.setIndex(index, exhausted)
 			tokens.setIndex(index, exhausted)
 		yield False
-
-	def accept(self, tokens, level = 0, debug = False):
-		index = tokens.getIndex()
-		exhausted = tokens.isExhausted()
-
-		if debug:
-			print('\t'*level + "RHSTree.accept(), Type:",self.levelType.name, "; Level:",level)
-			if self.levelKind == RHSKind.LEAF:
-				print('\t'*level + "NODE:", str(self.node))
-			print('\t'*level + "Before Index:",index)
-			print('\t'*level + "Current Token:",str(tokens.currentToken()))
-
-		result = False
-		if self.levelType == RHSType.TERMINAL:
-			if self.node.getValue() == '':
-				result = True
-			elif (not tokens.isExhausted()) and self.node.getValue() == tokens.currentToken().getValue():
-				tokens.nextToken()
-				result = True
-		elif self.levelType == RHSType.IDENTIFIER:
-			result = self.link.acceptMatch(tokens, level + 1, debug)
-		elif self.levelType == RHSType.GROUP:
-			result = self.children[0].accept(tokens, level + 1, debug)
-		elif self.levelType == RHSType.OPTIONAL:
-			self.children[0].accept(tokens, level + 1, debug)
-			result = True
-		elif self.levelType == RHSType.REPEAT:
-			value = True
-			while not tokens.isExhausted() and value: # the greedy repeat...
-				value = self.children[0].accept(tokens, level + 1, debug)
-			result = True
-		elif self.levelType == RHSType.CONCATENATION:
-			value = True
-			for child in self.children:
-				if not child.accept(tokens, level + 1, debug):
-					value = False
-					break
-			result = value
-		elif self.levelType == RHSType.ALTERNATION:
-			for child in self.children[:-1]:
-				if child.accept(tokens, level + 1, debug):
-					result = True
-					break
-			if not result:
-				result = self.children[-1].accept(tokens, level + 1, debug)
-
-		if not result:
-			tokens.setIndex(index, exhausted)
-
-		if debug:
-			print('\t'*level + "After  Index:",tokens.getIndex())
-			print('\t'*level + "result:",result)
-			print('\t'*level + "Is Exhausted:",tokens.isExhausted(),"\n")
-
-		return result
 
 	def nonLinkedTerminals(self):
 		terminals = []
