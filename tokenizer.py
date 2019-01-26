@@ -76,11 +76,6 @@ class Tokenizer(object):
 		self.ttl = ttl
 		self._ignoreWS = ignoreWhiteSpace
 		self._wsRE = re.compile('\s+')
-#		try:
-#			self._createTokens(inData)
-#		except TokenizerError as err:
-#			print(err.message)
-#			raise err
 
 	def nextToken(self):
 		self.index += 1
@@ -101,13 +96,22 @@ class Tokenizer(object):
 		return self._exhausted
 
 	def currentToken(self):
-		return self.tokens[self.index]
+		if len(self) == 0:
+			return self.getEmptyToken()
+		else:
+			return self.tokens[self.index]
+
+	def getEmptyToken(self):
+		emptyType = self.determineTokenType('')
+		return Token('',emptyType)
 
 	def getIndex(self):
 		return self.index
 
 	def setIndex(self, index, wasExhausted = False):
-		if index >= 0 and index < len(self):
+		if len(self) == 0 and index == 0:
+			self._exhausted = wasExhausted
+		elif index >= 0 and index < len(self):
 			self.index = index
 			self._exhausted = wasExhausted
 		else:
