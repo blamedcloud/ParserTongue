@@ -66,8 +66,6 @@ class Grammar(object):
 		for value in self.ruleDict[self.start].expectMatch(tokens,0, debug):
 			if tokens.isExhausted() and value:
 				return True
-			else:
-				tokens.setIndex(0, False) # this seems wrong
 		return False
 
 	def getAlphabet(self):
