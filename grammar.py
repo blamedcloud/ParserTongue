@@ -64,8 +64,11 @@ class Grammar(object):
 
 	def isInLanguage(self, tokens, debug = False):
 		for value in self.ruleDict[self.start].expectMatch(tokens,0, debug):
-			if tokens.isExhausted() and value:
-				return True
+			if value:
+				if len(tokens) == 0:
+					return True
+				elif tokens.isExhausted():
+					return True
 		return False
 
 	def getAlphabet(self):
@@ -79,13 +82,14 @@ class Grammar(object):
 
 	def classifyFirstNStrings(self, number, ignoreWS = True, debug = False):
 		alphabet = self.getAlphabet()
+		if '' not in alphabet:
+			alphabet.append('')
 		tokenizer = Tokenizer(getTTLForAlphabet(alphabet), ignoreWS)
 		classification = {}
-		if '' in alphabet:
-			tokenizer.tokenize('')
-			classification[''] = self.isInLanguage(tokenizer, debug)
-			alphabet.remove('')
-			number -= 1
+		tokenizer.tokenize('')
+		classification[''] = self.isInLanguage(tokenizer, debug)
+		alphabet.remove('')
+		number -= 1
 		stringGen = smallestStrGen(alphabet, True)()
 		while number > 0:
 			s = next(stringGen)
@@ -377,8 +381,8 @@ class RHSTree(object):
 
 		if self.levelType == RHSType.TERMINAL:
 			if self.node.getValue() == '':
-				if len(tokens) == 0:
-					tokens.setIndex(0,True) # exhausts the empty sting, so it will pass (if allowed)
+		#		if len(tokens) == 0:
+		#			tokens.setIndex(0,True) # exhausts the empty sting, so it will pass (if allowed)
 				yield True
 			elif (not tokens.isExhausted()) and self.node.getValue() == tokens.currentToken().getValue():
 				tokens.nextToken()
