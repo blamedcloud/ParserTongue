@@ -42,7 +42,7 @@ class TokenizerTypeList(object):
 		value = "TokenizerTypeList: ["
 		for tt in self:
 			value += str(tt) + ", "
-		value = value[:-2] # get rid of ', '
+		value = value[:-2] # get rid of trailing ', '
 		value += "]"
 		return value
 
@@ -178,8 +178,6 @@ class Tokenizer(object):
 		self.index = 0
 		self._exhausted = False
 		text = rawText
-
-		### do something about empty string...
 
 		while len(text) > 0:
 			matchObj = None

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+#test.py
 import sys
 import tokenizer
 import grammar
@@ -28,7 +29,6 @@ def grammarEnumeration(grammarFile, number, debug = False):
 
 def parserTest(grammarFile, testString, _debug = False):
 	p = parser.Parser(grammarFile)
-	p.getGrammarAlphabet()
 	if p.parse(testString, debug = _debug):
 		print("Test String in Language!")
 	else:
@@ -82,7 +82,6 @@ def main1():
 		isInGrammar(grammarFile, testStr, debug)
 	else:
 		tokenizerTest()
-
 
 if __name__ == "__main__":
 	main2()

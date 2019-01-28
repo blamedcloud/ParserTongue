@@ -9,6 +9,7 @@ class Parser(object):
 		self.grammar = Grammar(grammarFile, startSym = startIdentifier)
 		self.alphabet = None
 		self.ttl = None
+		self.setGrammarAlphabet()
 
 	def setTTL(self, ttl):
 		self.ttl = ttl
@@ -17,7 +18,7 @@ class Parser(object):
 		self.alphabet = alphabet
 		self.ttl = getTTLForAlphabet(self.alphabet)
 
-	def getGrammarAlphabet(self):
+	def setGrammarAlphabet(self):
 		self.alphabet = self.grammar.getAlphabet()
 		self.ttl = getTTLForAlphabet(self.alphabet)
 
