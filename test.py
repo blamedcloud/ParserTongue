@@ -54,6 +54,20 @@ def main2():
 	if len(sys.argv) == 2:
 		inFile = sys.argv[1]
 		grammarGen(inFile,False)
+	elif len(sys.argv) == 3:
+		grammarFile = sys.argv[1]
+		testStr = sys.argv[2]
+		debug = False
+		try:
+			testNum = int(testStr)
+			if testNum < 0:
+				debug = True
+				testNum = -1*testNum
+			grammarEnumeration(grammarFile, testNum, debug)
+		except ValueError:
+			parserTest(grammarFile, testStr)
+	else:
+		tokenizerTest()
 
 def main1():
 	if len(sys.argv) == 2:
