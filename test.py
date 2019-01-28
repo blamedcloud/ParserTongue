@@ -44,11 +44,16 @@ def isInGrammar(grammarFile, testString, debug = False):
 	else:
 		print("Test String NOT in Language!")
 
-def grammarGen(grammarFile, debug = False):
+def grammarGen(grammarFile, _debug = False):
 	g = grammar.Grammar(grammarFile)
-	gen = g.validStrGen(debug = debug)
-	while raw_input() != 'q':
+	gen = g.getValidStringGen(debug = _debug)
+	while input() != 'q':
 		print(next(gen))
+
+def main2():
+	if len(sys.argv) == 2:
+		inFile = sys.argv[1]
+		grammarGen(inFile,False)
 
 def main1():
 	if len(sys.argv) == 2:
@@ -80,4 +85,4 @@ def main1():
 
 
 if __name__ == "__main__":
-	main1()
+	main2()

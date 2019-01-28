@@ -71,8 +71,11 @@ class Grammar(object):
 					return True
 		return False
 
+	# NOTE: this is the naive method that tries each possible string in A* (kleene star)
+	# until it finds the next string in the language and yields it
+	# as such, it is pretty inefficient.
 	def getValidStringGen(self, maxIter = None, ignoreWS = True, debug = False):
-		def validStrGen():
+		def validStrGen(maxIter, ignoreWS, debug):
 			(isInfinite, treeSize) = self.ruleDict[self.start].walk()
 			iters = 0
 			alphabet = self.getAlphabet()
@@ -85,6 +88,13 @@ class Grammar(object):
 			iters += 1
 			alphabet.remove('')
 			if maxIter is None and not isInfinite:
+				# if this is a finite language, we
+				# use an upperbound of |A|^num(terminals)
+				# where |A| is the size of the alphabet
+				# and num(terminals) is (kind of) the number
+				# of terminals in the grammar file.
+				# This should be an upper bound, but a seriously
+				# bad one in most cases.
 				maxIter = (len(alphabet)**treeSize) + 1
 			finished = False
 			if (maxIter is not None) and iters >= maxIter:
@@ -98,7 +108,7 @@ class Grammar(object):
 				iters += 1
 				if (maxIter is not None) and iters >= maxIter:
 					finished = True
-		return validStrGen
+		return validStrGen(maxIter, ignoreWS, debug)
 
 	def getAlphabet(self):
 		alphabet = []
@@ -501,7 +511,7 @@ class RHSTree(object):
 			tokens.setIndex(index, exhausted)
 		yield False
 
-	def walkTree(prevIdentifiers):
+	def walkTree(self, prevIdentifiers):
 		isInfinite = False
 		treeSize = 0
 		if self.levelType == RHSType.TERMINAL:
