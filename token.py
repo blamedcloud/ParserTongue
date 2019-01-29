@@ -45,16 +45,20 @@ class Token(object):
 
 class TokenType(object):
 
-	def __init__(self, typeName, typePattern):
+	def __init__(self, typeName, typePattern, ignore = False):
 		self.name = typeName
 		self.pattern = typePattern
 		self._re = re.compile(self.pattern)
+		self.ignore = ignore
 
 	def getName(self):
 		return self.name
 
 	def isTypeOf(self, raw):
 		return self._re.fullmatch(raw) != None
+
+	def isIgnored(self):
+		return self.ignore
 
 	def getRE(self):
 		return self._re

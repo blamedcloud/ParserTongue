@@ -53,6 +53,7 @@ def defaultGrammarTTL():
 	gTTL.addTokenType(TokenType("Control", r'[()[\]{}|,]'))
 	gTTL.addTokenType(TokenType("Identifier", r'[a-zA-Z][a-zA-Z0-9_]*'))
 	gTTL.addTokenType(TokenType("Terminal", r'\'([^\']*)\'|"([^"]*)"'))
+	gTTL.addTokenType(TokenType("Comment", r'(#.*\n)|(#.*\Z)', True))
 	return gTTL
 
 def getTTLForAlphabet(alphabet):
@@ -62,12 +63,6 @@ def getTTLForAlphabet(alphabet):
 	return alphTTL
 
 class Tokenizer(object):
-
-#	identifierType = TokenType("Identifier", r'[a-zA-Z][a-zA-Z0-9_]*')
-#	controlType = TokenType("Control", r'[()[\]{}|,]')
-#	defineType = TokenType("Define", r'=')
-#	endType = TokenType("End", r';')
-#	terminalType = TokenType("Terminal", r'[^\']*|[^"]*')
 
 	def __init__(self, ttl = defaultGrammarTTL(), ignoreWhiteSpace = True):
 		self.tokens = []
@@ -199,7 +194,8 @@ class Tokenizer(object):
 							if g is not None:
 								sumtext += str(g)
 						matchText = sumtext
-					self.tokens.append(Token(matchText, tt, matchObj.group(0)))
+					if not tt.isIgnored():
+						self.tokens.append(Token(matchText, tt, matchObj.group(0)))
 					text = text[matchObj.end():]
 				else:
 					raise TokenizerNoMatchError("Beginning of text doesn't match any known TokenTypes: " + text)

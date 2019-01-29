@@ -14,7 +14,6 @@ class Grammar(object):
 		with open(grammarFile) as FILE:
 			for line in FILE:
 				full_text += line
-		full_text = full_text.replace("\n"," ").rstrip(' ')
 		fullTokenizer = Tokenizer()
 		fullTokenizer.tokenize(full_text)
 		splitToken = Token(';', fullTokenizer.getTTL()['End'])
