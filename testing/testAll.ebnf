@@ -1,0 +1,25 @@
+
+# test one of the following languages, prepend each with a number to differentiate them.
+start = '1' , test1 | '2' , test2 | '3' , test3 | '4' , test4 | '5' , test5 | '6' , test6;
+
+# a^n b^n . classic example
+test1 = "a" , test1 , "b" | "" ;
+
+# a^n . another classic example
+test2 = "a", test2,"a" | 'a';
+
+# b?(ab)*
+test3 = [ 'b' ] , {'a','b'} ;
+
+# strings with more 'b's than 'a's.
+test4 = {equal}, onlyb , {equal} ; 
+
+equal = 'a','b' | 'b','a' | 'a' , equal , 'b' | 'b' , equal , 'a' ;
+
+onlyb = 'b', onlyb | 'b' ;
+
+# strings with an equal number of 'a's and 'b's
+test5 = [equal];
+
+# ba*c
+test6 = 'b', ({'a'}, 'c');

@@ -50,6 +50,12 @@ def grammarGen(grammarFile, _debug = False):
 	while input() != 'q':
 		print(next(gen))
 
+def grammarGenIters(grammarFile, iters, _debug = False):
+	g = grammar.Grammar(grammarFile)
+	gen = g.getValidStringGen(debug = _debug)
+	for x in range(iters):
+		print(next(gen))
+
 def main2():
 	if len(sys.argv) == 2:
 		inFile = sys.argv[1]
@@ -63,7 +69,7 @@ def main2():
 			if testNum < 0:
 				debug = True
 				testNum = -1*testNum
-			grammarEnumeration(grammarFile, testNum, debug)
+			grammarGenIters(grammarFile, testNum, debug)
 		except ValueError:
 			parserTest(grammarFile, testStr)
 	else:
