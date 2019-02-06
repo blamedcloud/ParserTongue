@@ -4,6 +4,9 @@ from errors import *
 from rhstree import RHSTree, RHSType, RHSKind, getRHSKind
 from tokenizer import defaultGrammarTTL
 
+def identity(x):
+	return x
+
 class Rule(object):
 
 	def __init__(self, tokens):
@@ -13,13 +16,16 @@ class Rule(object):
 		self.rhsTree = None
 		self.tokens = tokens
 		self._parseRule()
+		self.transformer = identity
 
-	def _parseOutComments(self):
-		pass
+	def setTransformer(self, f):
+		self.transformer = f
 
 	def expectMatch(self, tokens, level = 0, debug = False):
 		for value in self.rhsTree.expect(tokens, level, debug):
-			yield value
+			if value:
+				tValue = value.transform(self.transformer)
+				yield tValue
 
 	def walk(self, prevIdentifiers = None):
 		if prevIdentifiers is not None:

@@ -2,6 +2,7 @@
 #rhstree.py
 from errors import *
 from enum import Enum
+from serializer import Serializer
 
 class RHSType(Enum):
 	IDENTIFIER = 0
@@ -110,6 +111,8 @@ class RHSTree(object):
 	def expect(self, tokens, level = 0, debug = False):
 		index = tokens.getIndex()
 		exhausted = tokens.isExhausted()
+		error = None
+		value = Serializer(False, None, "Value never instantiated!")
 
 		if debug:
 			print('\t'*level + "RHSTree.expect(), Type:", self.levelType.name, "; Level:",level)
@@ -121,63 +124,90 @@ class RHSTree(object):
 
 		if self.levelType == RHSType.TERMINAL:
 			if self.node.getValue() == '':
-				yield True
+				yield Serializer(True, '', None)
 			elif (not tokens.isExhausted()) and self.node.getValue() == tokens.currentToken().getValue():
 				tokens.nextToken()
-				yield True
+				yield Serializer(True, self.node.getValue(), None)
+			else:
+				error = "ERROR: Expected '" + str(self.node.getValue()) + "', got: '" + str(tokens.currentToken().getValue()) + "'"
 		elif self.levelType == RHSType.IDENTIFIER:
 			for value in self.link.expectMatch(tokens, level + 1, debug):
 				if value:
 					yield value
 				tokens.setIndex(index, exhausted)
+			error = value.getError()
 		elif self.levelType == RHSType.GROUP:
 			for value in self.children[0].expect(tokens, level + 1, debug):
 				if value:
 					yield value
 				tokens.setIndex(index, exhausted)
+			error = value.getError()
 		elif self.levelType == RHSType.OPTIONAL:
-			yield True	# First try not parsing this. If the execution gets back to this point,
-						# then we need to actually use this option. Thus expect.
+			# First try not parsing this. If the execution gets back to this point,
+			# then we need to actually use this option. Thus expect.
+			yield Serializer(True, '', None)
 			for value in self.children[0].expect(tokens, level + 1, debug):
 				if value:
 					yield value
 				tokens.setIndex(index, exhausted)
+			error = value.getError()
 		elif self.levelType == RHSType.REPEAT:
-			yield True
-			# if we get to this point we need at least one instance of this pattern.
-			value = True
-			for value in self.children[0].expect(tokens, level + 1, debug):
-				if value and (not tokens.isExhausted()):
-					newIndex = tokens.getIndex()
-					newExhaust = tokens.isExhausted()
-					# create a new instance of the repeat pattern
-					# since the first thing this does is yield True,
-					# we don't do it here.
-					for newValue in self.expect(tokens,level,debug):
-						if newValue:
-							yield newValue
-						tokens.setIndex(newIndex, newExhaust)
-				elif value and tokens.isExhausted():
+			for value in self.expectRepeat(tokens, level, debug):
+				if value:
 					yield value
-				tokens.setIndex(index, exhausted)
+			tokens.setIndex(index, exhausted)	# this isn't in the loop because if repeat fails
+												# we typically want to try more tokens, not less
+			error = value.getError()
 		elif self.levelType == RHSType.CONCATENATION:
 			for value in self.expectConcat(tokens, 0, level + 1, debug):
 				if value:
 					yield value
 				tokens.setIndex(index, exhausted)
+			error = value.getError()
 		elif self.levelType == RHSType.ALTERNATION:
 			for child in self.children:
 				for value in child.expect(tokens, level + 1, debug):
 					if value:
 						yield value
 					tokens.setIndex(index, exhausted)
+			error = value.getError()
 
 		if debug:
 			print('\t'*level + "After  Index:",tokens.getIndex())
 			print('\t'*level + "result:",False)
 			print('\t'*level + "Is Exhausted:",tokens.isExhausted(),"\n")
 
-		yield False
+		yield Serializer(False, None, error)
+
+	def expectRepeat(self, tokens, level = 0, debug = False):
+		yield Serializer(True, [], None)
+		# if we get to this point we need at least one instance of this pattern.
+		index = tokens.getIndex()
+		exhausted = tokens.isExhausted()
+		for value in self.children[0].expect(tokens, level + 1, debug):
+			if value and (not tokens.isExhausted()):
+				newIndex = tokens.getIndex()
+				newExhaust = tokens.isExhausted()
+				tValue = value.transform(lambda x: [x])
+				# create a new instance of the repeat pattern
+				# since the first thing this does is yield True,
+				# we don't do it here.
+				for newValue in self.expectRepeat(tokens, level, debug):
+					if newValue:
+						tNewValue = newValue.transform(lambda x: tValue.getArgs() + x)
+						yield tNewValue
+					tokens.setIndex(newIndex, newExhaust)
+			elif value and tokens.isExhausted():
+				tValue = value.transform(lambda x: [x])
+				yield tValue
+			tokens.setIndex(index, exhausted)
+		err = "Unknown Error in expectRepeat"
+		if not value:
+			err = value.getError()
+		else:
+			if not newValue:
+				err = newValue.getError()
+		yield Serializer(False, None, err)
 
 	def expectConcat(self, tokens, startChild, level = 0, debug = False):
 		index = tokens.getIndex()
@@ -185,15 +215,23 @@ class RHSTree(object):
 		child = self.children[startChild]
 		for value in child.expect(tokens, level, debug):
 			if value:
+				tValue = value.transform(lambda x: [x])
 				if startChild + 1 == len(self):
-					yield value
+					yield tValue
 				else:
 					for childValue in self.expectConcat(tokens, startChild + 1, level, debug):
 						if childValue:
-							yield childValue
+							tChildValue = childValue.transform(lambda x: tValue.getArgs() + x)
+							yield tChildValue
 						tokens.setIndex(index, exhausted)
 			tokens.setIndex(index, exhausted)
-		yield False
+		err = "Unknown Error in expectConcat"
+		if not value:
+			err = value.getError()
+		else:
+			if not childValue:
+				err = childValue.getError()
+		yield Serializer(False, None, err)
 
 	def walkTree(self, prevIdentifiers):
 		isInfinite = False
