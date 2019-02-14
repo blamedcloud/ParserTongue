@@ -55,6 +55,12 @@ class Grammar(object):
 	def getRuleList(self):
 		return self.rules
 
+	def setRuleTransformer(self, ruleName, f):
+		if ruleName in self.ruleDict:
+			self.ruleDict[ruleName].setTransformer(f)
+		else:
+			raise KeyError("No Rule with name '" + str(ruleName) + "' exists!")
+
 	def setStart(self, startSymbol):
 		if startSymbol in self.ruleDict:
 			self.start = startSymbol
@@ -62,13 +68,16 @@ class Grammar(object):
 			raise GrammarParsingError("Cannot add start symbol: '" + str(startSymbol) + "', because it does not exist!")
 
 	def isInLanguage(self, tokens, debug = False):
-		for value in self.ruleDict[self.start].expectMatch(tokens,0, debug):
+		return bool(self.tryMatch(tokens,debug))
+
+	def tryMatch(self, tokens, debug = False):
+		for value in self.ruleDict[self.start].expectMatch(tokens, 0, debug):
 			if value:
 				if len(tokens) == 0:
-					return True
+					return value
 				elif tokens.isExhausted():
-					return True
-		return False
+					return value
+		return value
 
 	# NOTE: this is the naive method that tries each possible string in A* (kleene star)
 	# until it finds the next string in the language and yields it

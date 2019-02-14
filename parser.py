@@ -22,9 +22,22 @@ class Parser(object):
 		self.alphabet = self.grammar.getAlphabet()
 		self.ttl = getTTLForAlphabet(self.alphabet)
 
-	def parse(self, raw, ignoreWS = False, debug = False):
+	def setRuleTransform(self, ruleName, f):
+		self.grammar.setRuleTransformer(ruleName, f)
+
+	def parseFile(self, objFile, ignoreWS = False, debug = False):
+		raw = ''
+		with open(objFile) as FILE:
+			for line in FILE:
+				raw += line
+		return self.parseRaw(raw, ignoreWS, debug)
+
+	def parseRaw(self, raw, ignoreWS = False, debug = False):
 		tokens = Tokenizer(self.ttl, ignoreWS)
 		tokens.tokenize(raw)
-		return self.grammar.isInLanguage(tokens, debug)
-
+		obj = self.grammar.tryMatch(tokens, debug)
+		if obj:
+			return obj.getArgs()
+		else:
+			return obj.getError()
 

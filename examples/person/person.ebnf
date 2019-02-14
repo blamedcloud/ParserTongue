@@ -1,0 +1,48 @@
+
+person = '{' , name , age , dob } ;
+
+
+name = firstName , ',' , lastName, ';' ;
+
+firstName = string ;
+
+lastName = string ;
+
+
+age = positiveInt , ';' ;
+
+
+dob = date , ';' ;
+
+date = month , '/' , day , '/' , year ;
+
+month = nonZero | '10' | '11' | '12' ;
+
+day = nonZero | '1' , digit | '2' , digit | 3 , ( '0' | '1' ) ;
+
+year = digit , digit , digit , digit ;
+
+
+
+
+# boilerplate constructions, should be simplified somehow...
+
+string = '"' , letter , { letter } , '"' ;
+
+letter = upper_letter | lower_letter ;
+
+upper_letter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
+             | "H" | "I" | "J" | "K" | "L" | "M" | "N"
+             | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
+             | "V" | "W" | "X" | "Y" | "Z" ;
+
+lower_letter = "a" | "b" | "c" | "d" | "e" | "f" | "g"
+             | "h" | "i" | "j" | "k" | "l" | "m" | "n"
+             | "o" | "p" | "q" | "r" | "s" | "t" | "u"
+             | "v" | "w" | "x" | "y" | "z" ;
+
+positiveInt = nonZero , {digit} ;
+
+nonZero = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' ;
+
+digit = '0' | nonZero ;

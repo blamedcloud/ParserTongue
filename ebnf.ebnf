@@ -43,7 +43,7 @@ rhs = identifier
     | rhs , "|" , rhs
     | rhs , "," , rhs ;
 
-comment = "(" , "*" , { character_all } , "*" , ")" ;
+# comments are python-style
 
 rule = lhs , "=" , rhs , ";" ;
 
