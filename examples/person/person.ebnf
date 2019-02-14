@@ -1,5 +1,5 @@
 
-person = '{' , name , age , dob } ;
+person = '{' , name , age , dob , '}' ;
 
 
 name = firstName , ',' , lastName, ';' ;
@@ -18,7 +18,7 @@ date = month , '/' , day , '/' , year ;
 
 month = nonZero | '10' | '11' | '12' ;
 
-day = nonZero | '1' , digit | '2' , digit | 3 , ( '0' | '1' ) ;
+day = nonZero | '1' , digit | '2' , digit | '3' , ( '0' | '1' ) ;
 
 year = digit , digit , digit , digit ;
 

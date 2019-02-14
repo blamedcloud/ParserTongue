@@ -20,6 +20,6 @@ class Serializer(object):
 
 	def transform(self, f):
 		if self:
-			return Serializer(self.valid, self.args, self.err)
+			return Serializer(self.valid, f(self.args), self.err)
 		else:
 			raise ValueError("Can't transform failed parse!")

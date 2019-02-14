@@ -70,7 +70,7 @@ class Tokenizer(object):
 		self._exhausted = False
 		self.ttl = ttl
 		self._ignoreWS = ignoreWhiteSpace
-		self._wsRE = re.compile('\s+')
+		self._wsRE = re.compile(r'\s+')
 
 	def nextToken(self):
 		self.index += 1
@@ -198,7 +198,7 @@ class Tokenizer(object):
 						self.tokens.append(Token(matchText, tt, matchObj.group(0)))
 					text = text[matchObj.end():]
 				else:
-					raise TokenizerNoMatchError("Beginning of text doesn't match any known TokenTypes: " + text)
+					raise TokenizerNoMatchError("Beginning of text doesn't match any known TokenTypes: '" + text + "'")
 			else:
 				text = text[matchObj.end():]
 
