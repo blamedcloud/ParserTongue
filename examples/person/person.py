@@ -30,7 +30,7 @@ class Person(object):
 		output += '\tname: ' + str(self.name) + ';\n'
 		output += '\tage:  ' + str(self.age) + ';\n'
 		output += '\tdob:  ' + str(self.dob) + ';\n'
-		output += '}\n'
+		output += '}'
 		return output
 
 
