@@ -15,11 +15,19 @@ class Rule(object):
 		self.lhsToken = None
 		self.rhsTree = None
 		self.tokens = tokens
-		self._parseRule()
 		self.transformer = identity
+		self.external = False
+		self._externalName = None
+		self._parseRule()
 
 	def setTransformer(self, f):
 		self.transformer = f
+
+	def hasDependency(self):
+		return self.external
+
+	def getDependency(self):
+		return self._externalName
 
 	def expectMatch(self, tokens, level = 0, debug = False):
 		for value in self.rhsTree.expect(tokens, level, debug):
@@ -64,12 +72,36 @@ class Rule(object):
 			self.tokens.nextToken()
 		else:
 			raise RuleParsingError("Rule has no '=': " + raw)
-		self.rhsTree = self._parseRHS()
+		tmpExternalName = None
+		index = self.tokens.getIndex()
+		exhausted = self.tokens.isExhausted()
+		if len(self.tokens) == 5: # all external rules are exactly 5 tokens long
+			identifierType = self.getTTByName('Identifier')
+			if self._currentTokenType() == identifierType:
+				tmpExternalName = self.tokens.currentToken().getValue()
+				self.tokens.nextToken()
+				if self._currentTokenType() == self.getTTByName('External'):
+					self.tokens.nextToken()
+					if self._currentTokenType() == identifierType:
+						self.external = True
+						self._externalName = tmpExternalName
+						self.rhsTree = RHSTree(getRHSLeafTypeFromTokenType(identifierType))
+						self.rhsTree.createNode(self.tokens.currentToken())
+		if not self.external:
+			self.tokens.setIndex(index, exhausted)
+			self.rhsTree = self._parseRHS()
 		if not self.tokens.isExhausted():
 			raise RuleParsingError("Didn't Exhaust all tokens!")
 
-	def createLinkage(self, ruleDict):
-		self.rhsTree.addLinkage(ruleDict)
+	# NOTE: might need to pass the externalDicts into the rhsTree for dependency chains longer than 1.
+	def createLinkage(self, ruleDict, externalRuleDicts):
+		if not self.external:
+			self.rhsTree.addLinkage(ruleDict)
+		else:
+			if self._externalName in externalRuleDicts:
+				self.rhsTree.addLinkage(externalRuleDicts[self._externalName])
+			else:
+				raise RuleLinkageError("No external Rule Dict by the name of: " + str(self._externalName))
 
 	def _currentTokenType(self):
 		return self.tokens.currentToken().getType()

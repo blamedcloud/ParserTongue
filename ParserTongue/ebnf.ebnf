@@ -16,7 +16,7 @@ letter = upper_letter | lower_letter ;
 digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
 
 symbol_no_quote = "[" | "]" | "{" | "}" | "(" | ")" | "<"
-                | ">" | "=" | "|" | "." | "," | ";" ;
+                | ">" | "=" | "|" | "." | "," | ";" | ":" ;
 
 symbol = symbol_no_quote | '"' | "'" ;
 
@@ -45,5 +45,7 @@ rhs = identifier
 
 # comments are python-style
 
-rule = lhs , "=" , rhs , ";" ;
+external = identifier , ":" , identifier ;
+
+rule = lhs , "=" , ( rhs | external ) , ";" ;
 

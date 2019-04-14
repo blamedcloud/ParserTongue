@@ -18,6 +18,9 @@ class Serializer(object):
 	def getError(self):
 		return self.err
 
+	def __str__(self):
+		return "{valid:" + str(self.valid) + ", args:" + str(self.args) + ", err:" + str(self.err) + "}"
+
 	def transform(self, f):
 		if self:
 			return Serializer(self.valid, f(self.args), self.err)

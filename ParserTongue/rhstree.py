@@ -175,7 +175,8 @@ class RHSTree(object):
 		if debug:
 			print('\t'*level + "After  Index:",tokens.getIndex())
 			print('\t'*level + "result:",False)
-			print('\t'*level + "Is Exhausted:",tokens.isExhausted(),"\n")
+			print('\t'*level + "Is Exhausted:",tokens.isExhausted())
+			print('\t'*level + "value:",str(value), "\n")
 
 		yield Serializer(False, None, error)
 

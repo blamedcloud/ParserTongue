@@ -50,6 +50,7 @@ def defaultGrammarTTL():
 	gTTL = TokenizerTypeList()
 	gTTL.addTokenType(TokenType("End", r';'))
 	gTTL.addTokenType(TokenType("Define", r'='))
+	gTTL.addTokenType(TokenType("External", r':'))
 	gTTL.addTokenType(TokenType("Control", r'[()[\]{}|,]'))
 	gTTL.addTokenType(TokenType("Identifier", r'[a-zA-Z][a-zA-Z0-9_]*'))
 	gTTL.addTokenType(TokenType("Terminal", r'\'([^\']*)\'|"([^"]*)"'))

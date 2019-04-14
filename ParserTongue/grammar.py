@@ -8,8 +8,16 @@ from rule import Rule
 
 class Grammar(object):
 
-	def __init__(self, grammarFile, startSym = None, lastStart = False, quiet = True):
+	def __init__(self, grammarFile, startSym = None, lastStart = False, quiet = True, deferLinkage = False):
 		self.quiet = quiet
+		self.rules = None
+		self.ruleDict = None
+		self.start = None
+		self.externalDependencies = []
+		self._externalRuleDicts = {}
+		self._deferLinkage = deferLinkage
+		self._linkageDone = False
+
 		full_text = ""
 		with open(grammarFile) as FILE:
 			for line in FILE:
@@ -21,16 +29,17 @@ class Grammar(object):
 			raise GrammarParsingError("Found Text after last rule! Did you forget ';'?")
 		ruleTokenizers = fullTokenizer.splitTokensOn(splitToken)
 
-		# debug:
-	#	for i, r in enumerate(ruleTokenizers):
-	#		print(str(i) + ": \n\t" + str(r))
-
 		try:
 			self.rules = []
 			for i, tokens in enumerate(ruleTokenizers):
 				if not self.quiet:
 					print("PARSING RULE:",i)
-				self.rules.append(Rule(tokens))
+				nextRule = Rule(tokens)
+				if nextRule.hasDependency():
+					dependency = nextRule.getDependency()
+					if dependency not in self.externalDependencies:
+						self.externalDependencies.append(dependency)
+				self.rules.append(nextRule)
 		except GrammarError as err:
 			print("Exception thrown while parsing rule",i)
 			print(err.message)
@@ -40,8 +49,8 @@ class Grammar(object):
 			raise err
 
 		self.ruleDict = {r.lhs().getValue() : r for r in self.rules}
-		for rule in self.rules:
-			rule.createLinkage(self.ruleDict)
+		if not self._deferLinkage:
+			self.linkRules()
 
 		if startSym == None:
 			index = 0
@@ -52,8 +61,29 @@ class Grammar(object):
 		else:
 			self.setStart(startSym)
 
+	def setExternalRuleDicts(self, externalRuleDicts):
+		self._externalRuleDicts = externalRuleDicts
+
+	def hasLinked(self):
+		return self._linkageDone
+
+	def getExternalRuleDicts(self):
+		return self._externalRuleDicts
+
+	def getDependencies(self):
+		return self.externalDependencies
+
+	def linkRules(self):
+		if not self._linkageDone:
+			for rule in self.rules:
+				rule.createLinkage(self.ruleDict, self._externalRuleDicts)
+			self._linkageDone = True
+
 	def getRuleList(self):
 		return self.rules
+
+	def getRuleDict(self):
+		return self.ruleDict
 
 	def setRuleTransformer(self, ruleName, f):
 		if ruleName in self.ruleDict:
@@ -71,22 +101,39 @@ class Grammar(object):
 		return bool(self.tryMatch(tokens,debug))
 
 	def tryMatch(self, tokens, debug = False):
+		if not self._linkageDone:
+			raise GrammarLinkError("Cannot Match without Linking. Aborting.")
+		value = None
 		for value in self.ruleDict[self.start].expectMatch(tokens, 0, debug):
 			if value:
 				if len(tokens) == 0:
+
+					print("tryMatch-value:",str(value))
+
 					return value
 				elif tokens.isExhausted():
+
+					print("tryMatch-value:",str(value))
+
 					return value
+
+		print("tryMatch-value:",str(value))
+
 		return value
 
 	# NOTE: this is the naive method that tries each possible string in A* (kleene star)
 	# until it finds the next string in the language and yields it
 	# as such, it is pretty inefficient.
 	def getValidStringGen(self, maxIter = None, ignoreWS = True, debug = False):
+		if not self._linkageDone:
+			raise GrammarLinkError("Cannot Walk without Linking. Aborting.")
 		def validStrGen(maxIter, ignoreWS, debug):
 			(isInfinite, treeSize) = self.ruleDict[self.start].walk()
 			iters = 0
 			alphabet = self.getAlphabet()
+
+			print(alphabet)
+
 			if '' not in alphabet:
 				alphabet.append('')
 			tokenizer = Tokenizer(getTTLForAlphabet(alphabet), ignoreWS)
@@ -111,6 +158,9 @@ class Grammar(object):
 			while not finished:
 				testStr = next(testStringGen)
 				tokenizer.tokenize(testStr)
+
+				print('testStr:', str(tokenizer))
+
 				if self.isInLanguage(tokenizer, debug):
 					yield testStr
 				iters += 1
@@ -118,16 +168,27 @@ class Grammar(object):
 					finished = True
 		return validStrGen(maxIter, ignoreWS, debug)
 
-	def getAlphabet(self):
+	def getAlphabet(self, includeExternal = True):
+		if not self._linkageDone and includeExternal:
+			raise GrammarLinkError("Cannot get Alphabet without Linking. Aborting.")
 		alphabet = []
 		for rule in self.rules:
 			terminals = rule.getTerminals()
 			for t in terminals:
 				if t not in alphabet:
 					alphabet.append(t)
+		if includeExternal:
+			for _ , ruleDict in self._externalRuleDicts.items():
+				for _ , rule in ruleDict.items():
+					terminals = rule.getTerminals()
+					for t in terminals:
+						if t not in alphabet:
+							alphabet.append(t)
 		return sorted(alphabet, key=lambda x: len(x), reverse=True)
 
 	def classifyFirstNStrings(self, number, ignoreWS = True, debug = False):
+		if not self._linkageDone:
+			raise GrammarLinkError("Cannot Classify without Linking. Aborting.")
 		alphabet = self.getAlphabet()
 		if '' not in alphabet:
 			alphabet.append('')

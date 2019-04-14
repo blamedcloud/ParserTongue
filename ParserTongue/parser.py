@@ -1,14 +1,60 @@
 #!/usr/bin/env python3
 #parser.py
+import os
+from errors import *
 from grammar import Grammar
 from tokenizer import Tokenizer, getTTLForAlphabet
+from PythonLibraries.tree import Tree
+
+def populateDependencies(depTree, dependentGrammarDict):
+	name = str(depTree.getName())
+	dependencies = depTree.getData().getDependencies()
+	for dep in dependencies:
+		if dep in dependentGrammarDict:
+			if depTree.hasAncestorWithName(dep) or depTree.getName() == dep:
+				raise GrammarDependencyError("Found Recursive Dependency! Dep = " + str(dep) + "; Node = " + name)
+			else:
+				depTree.addChild(Tree(dep, dependentGrammarDict[dep]))
+		else:
+			raise GrammarDependencyError("Missing Dependency! Dep = " + str(dep) + "; Node = " + name)
+	for i in range(len(depTree)):
+		child = depTree.getChild(i)
+		populateDependencies(child, dependentGrammarDict)
+
+def grammarFileToName(grammarFile):
+	return os.path.basename(os.path.splitext(file1)[0])
+
+def resolveDependencies(depTree):
+	if not depTree.getData().hasLinked():
+		neededRuleDicts = {}
+		if len(depTree) > 0:
+			for i in range(len(depTree)):
+				child = depTree.getChild(i)
+				childRuleDicts = resolveDependencies(child)
+				neededRuleDicts.update(childRuleDicts)
+				neededRuleDicts[child.getName()] = child.getData().getRuleDict()
+		depTree.getData().setExternalRuleDicts(neededRuleDicts)
+		depTree.getData().linkRules()
+	return depTree.getData().getExternalRuleDicts()
+
 
 class Parser(object):
 
-	def __init__(self, grammarFile, startIdentifier = None):
-		self.grammar = Grammar(grammarFile, startSym = startIdentifier)
+	def __init__(self, grammarFile, startIdentifier = None, dependentGrammarFiles = None):
 		self.alphabet = None
 		self.ttl = None
+		self.grammar = Grammar(grammarFile, startSym = startIdentifier, deferLinkage = True)
+		neededDependencies = self.grammar.getDependencies()
+		if len(neededDependencies) > 0:
+			depTree = Tree(grammarFileToName(grammarFile), self.grammar)
+			dependentGrammarDict = {grammarFileToName(gF) : Grammar(gF, deferLinkage = True) for gF in dependentGrammarFiles}
+			populateDependencies(depTree, dependentGrammarDict)
+			resolveDependencies(depTree)
+		else:
+			self.grammar.setExternalRuleDicts({})
+			self.grammar.linkRules()
+		if not self.grammar.hasLinked():
+			raise GrammarLinkError("Grammar was never linked. Aborting.")
 		self.setGrammarAlphabet()
 
 	def setTTL(self, ttl):

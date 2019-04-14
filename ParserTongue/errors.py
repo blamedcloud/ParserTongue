@@ -57,7 +57,25 @@ class RuleParsingError(GrammarError):
 		self.message = message
 
 
+class RuleLinkageError(GrammarError):
+
+	def __init__(self, message):
+		self.message = message
+
+
 class RuleTreeError(GrammarError):
+
+	def __init__(self, message):
+		self.message = message
+
+
+class GrammarLinkError(GrammarError):
+
+	def __init__(self, message):
+		self.message = message
+
+
+class GrammarDependencyError(GrammarError):
 
 	def __init__(self, message):
 		self.message = message

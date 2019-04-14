@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 #test.py
 import sys
+sys.path.insert(0,'../ParserTongue')
 import tokenizer
 import grammar
 import parser
 
-def grammarTest(inFile = 'ebnf.ebnf'):
+def grammarTest(inFile = '../ParserTongue/ebnf.ebnf'):
 	ebnf = grammar.Grammar(inFile)
 	for i, rule in enumerate(ebnf.getRuleList()):
 		print("Rule " + str(i) + ":\n")
@@ -13,7 +14,7 @@ def grammarTest(inFile = 'ebnf.ebnf'):
 		print()
 
 def tokenizerTest():
-	with open("ebnf.ebnf", "r") as FILE:
+	with open("../ParserTongue/ebnf.ebnf", "r") as FILE:
 		tokens = tokenizer.Tokenizer(FILE)
 	print(tokens)
 
@@ -58,9 +59,15 @@ def grammarGenIters(grammarFile, iters, _debug = False):
 
 def main2():
 	if len(sys.argv) == 2:
+
+		print('Main2, grammarGen Test:')
+
 		inFile = sys.argv[1]
-		grammarGen(inFile,False)
+		grammarGen(inFile,True)
 	elif len(sys.argv) == 3:
+
+		print("Main2, grammarGenIters Test:")
+
 		grammarFile = sys.argv[1]
 		testStr = sys.argv[2]
 		debug = False

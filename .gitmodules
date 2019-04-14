@@ -1,0 +1,3 @@
+[submodule "ParserTongue/PythonLibraries"]
+	path = ParserTongue/PythonLibraries
+	url = https://github.com/blamedcloud/PythonLibraries
