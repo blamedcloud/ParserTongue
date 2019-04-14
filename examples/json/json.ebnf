@@ -1,0 +1,30 @@
+
+json = element ;
+
+value = object | array | string | number | true | false | null ;
+
+false = "false" ;
+
+true = "true" ;
+
+null = "null" ;
+
+object = '{' , '}'
+       | '{' , members , '}' ;
+
+members = member 
+        | member , ',' , members ;
+
+member = string , ':' , element ;
+
+array = '[' , ']'
+      | '[' , elements , ']' ;
+
+elements = element 
+         | element , ',' , elements ;
+
+element = value ;
+
+string = common:stringDQ ;
+
+number = common:float ;

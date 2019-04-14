@@ -9,16 +9,27 @@ def identity(x):
 
 # collapses (in-place) a nested structure of lists and strings
 # to just a single string
-def collapse(args):
+def collapseToStr(args):
 	if type(args) == str:
 		return args
 	elif type(args) == list:
 		inPlace = ''
 		for item in args:
-			inPlace += collapse(item)
+			inPlace += collapseToStr(item)
 		return inPlace
 	else:
 		raise TypeError("args was not list or str, was: " + str(type(args)))
+
+# collapses (in-place) a nested structure of lists
+# to just a single list (or a single element list if not given a list)
+def collapseToList(args):
+	if type(args) == list:
+		inPlace = []
+		for item in args:
+			inPlace += collapseToList(item)
+		return inPlace
+	else:
+		return [args]
 
 
 class Rule(object):

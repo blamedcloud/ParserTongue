@@ -35,8 +35,9 @@ lowerLetter = "a" | "b" | "c" | "d" | "e" | "f" | "g"
 
 symbolNoQuote = '~' | '!' | '@' | '#' | '$' | '%' | '^'
               | '&' | '*' | '(' | ')' | '-' | '_' | '+'
-			  | '=' | '[' | ']' | '{' | '}' | '|' | '/'
-			  | ':' | ';' | '<' | ',' | '>' | '.' | '?' ;
+			  | '=' | '[' | ']' | '{' | '}' | '|' | '\'
+			  | ':' | ';' | '<' | ',' | '>' | '.' | '?'
+			  | '/' ;
 
 symbol = symbolNoQuote | '"' | "'" ;
 
@@ -52,7 +53,7 @@ charDQ = charNQ | '"' ;
 
 ### numeric types ###
 
-float = integer , [ '.' , ( ( { '0' } , positiveInt ) | '0' ) ] ;
+float = integer , [ '.' , ( ( { '0' } , positiveInt ) | '0' ) ] , [ ('e' | 'E') , integer ] ;
 
 integer = [ '-' ] , positiveInt | '0' ;
 

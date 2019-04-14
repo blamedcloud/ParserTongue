@@ -1,0 +1,17 @@
+{
+	"myNum" : -23454.00045E-7 ,
+	"isEmpty":false ,
+	"myArr" :
+	[
+		"hello" ,
+		"this" ,
+		"is" ,
+		null ,
+		{
+			"nested" : true ,
+			"name" : "testStr"
+		} ,
+		6.4 ,
+		"words with spaces"
+	]
+}
