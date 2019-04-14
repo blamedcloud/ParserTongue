@@ -14,7 +14,7 @@ test3 = [ 'b' ] , {'a','b'} ;
 # strings with more 'b's than 'a's.
 test4 = {equal}, onlyb , {equal} ; 
 
-equal = 'a','b' | 'b','a' | 'a' , equal , 'b' | 'b' , equal , 'a' ;
+equal = 'a','b' | 'b','a' | 'a' , equal , 'b' | 'b' , equal , 'a' | 'a' , 'b', equal | 'b', 'a', equal;
 
 onlyb = 'b', onlyb | 'b' ;
 
