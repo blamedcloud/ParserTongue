@@ -5,6 +5,7 @@ from token import Token, TokenType
 from tokenizer import Tokenizer, getTTLForAlphabet
 from smallestStrings import smallestStrGen
 from rule import Rule
+from serializer import Serializer
 
 class Grammar(object):
 
@@ -107,19 +108,18 @@ class Grammar(object):
 		for value in self.ruleDict[self.start].expectMatch(tokens, 0, debug):
 			if value:
 				if len(tokens) == 0:
-
-					print("tryMatch-value:",str(value))
-
+					if debug:
+						print("tryMatch-valueA:",str(value))
 					return value
 				elif tokens.isExhausted():
-
-					print("tryMatch-value:",str(value))
-
+					if debug:
+						print("tryMatch-valueB:",str(value))
 					return value
-
-		print("tryMatch-value:",str(value))
-
-		return value
+		if tokens.isExhausted() or len(tokens) == 0:
+			if debug:
+				print("tryMatch-valueC:",str(value))
+			return value
+		return Serializer(False, None, "Tokens not Exhausted")
 
 	# NOTE: this is the naive method that tries each possible string in A* (kleene star)
 	# until it finds the next string in the language and yields it
@@ -131,9 +131,6 @@ class Grammar(object):
 			(isInfinite, treeSize) = self.ruleDict[self.start].walk()
 			iters = 0
 			alphabet = self.getAlphabet()
-
-			print(alphabet)
-
 			if '' not in alphabet:
 				alphabet.append('')
 			tokenizer = Tokenizer(getTTLForAlphabet(alphabet), ignoreWS)
@@ -158,9 +155,6 @@ class Grammar(object):
 			while not finished:
 				testStr = next(testStringGen)
 				tokenizer.tokenize(testStr)
-
-				print('testStr:', str(tokenizer))
-
 				if self.isInLanguage(tokenizer, debug):
 					yield testStr
 				iters += 1
