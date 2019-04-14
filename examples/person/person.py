@@ -3,8 +3,7 @@
 import sys
 sys.path.insert(0,'../../ParserTongue')
 import parser
-from rule import collapse
-
+from rule import collapseToStr
 
 class Person(object):
 
@@ -39,12 +38,12 @@ class PersonParser(object):
 		p = parser.Parser('person.ebnf', dependentGrammarFiles = ['../common.ebnf'])
 		p.setRuleTransform('person', Person)
 		p.setRuleTransform('name', Name)
-		p.setRuleTransform('firstName', collapse)
-		p.setRuleTransform('lastName', collapse)
+		p.setRuleTransform('firstName', collapseToStr)
+		p.setRuleTransform('lastName', collapseToStr)
 		p.setRuleTransform('age', lambda x: x[0])
-		p.setRuleTransform('posInt', lambda x: int(collapse(x)))
+		p.setRuleTransform('posInt', lambda x: int(collapseToStr(x)))
 		p.setRuleTransform('dob', lambda x: x[0])
-		p.setRuleTransform('date', collapse)
+		p.setRuleTransform('date', collapseToStr)
 		self.personParser = p
 
 	def getPerson(self, personFile):
