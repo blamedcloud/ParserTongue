@@ -48,7 +48,10 @@ class TokenType(object):
 	def __init__(self, typeName, typePattern, ignore = False):
 		self.name = typeName
 		self.pattern = typePattern
-		self._re = re.compile(self.pattern)
+		try:
+			self._re = re.compile(self.pattern)
+		except:
+			self._re = re.compile(re.escape(self.pattern))
 		self.ignore = ignore
 
 	def getName(self):

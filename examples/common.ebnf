@@ -1,0 +1,77 @@
+
+### string types ###
+
+stringDQ = '"' , charSQ , { charSQ } , '"' ;
+
+stringSQ = "'" , charDQ , { charDQ } , "'" ;
+
+stringNQ = charNQ , { charNQ } ;
+
+string = charAll , { charAll } ;
+
+alphStrDQ = '"' , alphStr , '"' ;
+
+alphStrSQ = "'" , alphStr , "'" ;
+
+alphStr = letter , {letter} ;
+
+alphNumStr = alphNum , { alphNum } ;
+
+alphNumStrDQ = '"' , alphNumStr , '"' ; 
+
+alphNumStrSQ = "'" , alphNumStr , "'" ;
+
+letter = upperLetter | lowerLetter ;
+
+upperLetter = "A" | "B" | "C" | "D" | "E" | "F" | "G"
+             | "H" | "I" | "J" | "K" | "L" | "M" | "N"
+             | "O" | "P" | "Q" | "R" | "S" | "T" | "U"
+             | "V" | "W" | "X" | "Y" | "Z" ;
+
+lowerLetter = "a" | "b" | "c" | "d" | "e" | "f" | "g"
+             | "h" | "i" | "j" | "k" | "l" | "m" | "n"
+             | "o" | "p" | "q" | "r" | "s" | "t" | "u"
+             | "v" | "w" | "x" | "y" | "z" ;
+
+symbolNoQuote = '~' | '!' | '@' | '#' | '$' | '%' | '^'
+              | '&' | '*' | '(' | ')' | '-' | '_' | '+'
+			  | '=' | '[' | ']' | '{' | '}' | '|' | '/'
+			  | ':' | ';' | '<' | ',' | '>' | '.' | '?' ;
+
+symbol = symbolNoQuote | '"' | "'" ;
+
+alphNum = letter | digit ;
+
+charAll = alphNum | symbol ;
+
+charNQ = alphNum | symbolNoQuote ;
+
+charSQ = charNQ | "'" ;
+
+charDQ = charNQ | '"' ;
+
+### numeric types ###
+
+float = integer , [ '.' , ( ( { '0' } , positiveInt ) | '0' ) ] ;
+
+integer = [ '-' ] , positiveInt | '0' ;
+
+nonNegativeInt = '0' | positiveInt ;
+
+positiveInt = nonZero , {digit} ;
+
+nonZero = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' ;
+
+digit = '0' | nonZero ;
+
+
+### date types ###
+
+date = month , '/' , day , '/' , year ;
+
+month = nonZero | '10' | '11' | '12' ;
+
+day = nonZero | '1' , digit | '2' , digit | '3' , ( '0' | '1' ) ;
+
+year = digit , digit , digit , digit ;
+

@@ -3,19 +3,8 @@
 import sys
 sys.path.insert(0,'../../ParserTongue')
 import parser
+from rule import collapse
 
-# collapses (in-place) a nested structure of lists and strings
-# to just a single string
-def collapse(args):
-	if type(args) == str:
-		return args
-	elif type(args) == list:
-		inPlace = ''
-		for item in args:
-			inPlace += collapse(item)
-		return inPlace
-	else:
-		raise TypeError("args was not list or str, was: " + str(type(args)))
 
 class Person(object):
 
@@ -47,13 +36,13 @@ class Name(object):
 class PersonParser(object):
 
 	def __init__(self):
-		p = parser.Parser('person.ebnf')
+		p = parser.Parser('person.ebnf', dependentGrammarFiles = ['../common.ebnf'])
 		p.setRuleTransform('person', Person)
 		p.setRuleTransform('name', Name)
 		p.setRuleTransform('firstName', collapse)
 		p.setRuleTransform('lastName', collapse)
 		p.setRuleTransform('age', lambda x: x[0])
-		p.setRuleTransform('positiveInt', lambda x: int(collapse(x)))
+		p.setRuleTransform('posInt', lambda x: int(collapse(x)))
 		p.setRuleTransform('dob', lambda x: x[0])
 		p.setRuleTransform('date', collapse)
 		self.personParser = p

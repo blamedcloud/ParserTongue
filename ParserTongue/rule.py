@@ -7,6 +7,20 @@ from tokenizer import defaultGrammarTTL
 def identity(x):
 	return x
 
+# collapses (in-place) a nested structure of lists and strings
+# to just a single string
+def collapse(args):
+	if type(args) == str:
+		return args
+	elif type(args) == list:
+		inPlace = ''
+		for item in args:
+			inPlace += collapse(item)
+		return inPlace
+	else:
+		raise TypeError("args was not list or str, was: " + str(type(args)))
+
+
 class Rule(object):
 
 	def __init__(self, tokens):
