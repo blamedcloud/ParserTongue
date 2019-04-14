@@ -22,7 +22,7 @@ def populateDependencies(depTree, dependentGrammarDict):
 		populateDependencies(child, dependentGrammarDict)
 
 def grammarFileToName(grammarFile):
-	return os.path.basename(os.path.splitext(file1)[0])
+	return os.path.basename(os.path.splitext(grammarFile)[0])
 
 def resolveDependencies(depTree):
 	if not depTree.getData().hasLinked():
@@ -70,6 +70,9 @@ class Parser(object):
 
 	def setRuleTransform(self, ruleName, f):
 		self.grammar.setRuleTransformer(ruleName, f)
+
+	def getGrammar(self):
+		return self.grammar
 
 	def parseFile(self, objFile, ignoreWS = False, debug = False):
 		raw = ''

@@ -1,6 +1,8 @@
 
 start = {equal}, onlyb , {equal} ; 
 
-equal = 'a','b' | 'b','a' | 'a' , equal , 'b' | 'b' , equal , 'a' ;
+# equal = 'a','b' | 'b','a' | 'a' , equal , 'b' | 'b' , equal , 'a' ;
+
+equal = equalABs : equal ;
 
 onlyb = 'b', onlyb | 'b' ;

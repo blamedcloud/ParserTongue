@@ -45,28 +45,44 @@ def isInGrammar(grammarFile, testString, debug = False):
 	else:
 		print("Test String NOT in Language!")
 
-def grammarGen(grammarFile, _debug = False):
+def grammarFileGen(grammarFile, _debug = False):
 	g = grammar.Grammar(grammarFile)
+	grammarGen(g, _debug)
+
+def grammarGen(g, _debug = False):
 	gen = g.getValidStringGen(debug = _debug)
 	while input() != 'q':
 		print(next(gen))
 
-def grammarGenIters(grammarFile, iters, _debug = False):
+def grammarFileGenIters(grammarFile, iters, _debug = False):
 	g = grammar.Grammar(grammarFile)
+	grammarGenIters(g, iters, _debug)
+
+def grammarGenIters(g, iters, _debug = False):
 	gen = g.getValidStringGen(debug = _debug)
 	for x in range(iters):
 		print(next(gen))
 
+def testAllExternal(numIters = -1, _debug = False):
+	mainGrammar = "testAllExternal.ebnf"
+	otherGrammars = ["aToN.ebnf", "aToNbToN.ebnf", "b_aStar_c.ebnf", "bMaybe_abStar.ebnf", "equalABs.ebnf", "moreBs.ebnf"]
+	p = parser.Parser(mainGrammar, dependentGrammarFiles = otherGrammars)
+	g = p.getGrammar()
+	if numIters > 0:
+		grammarGenIters(g, numIters, _debug)
+	else:
+		grammarGen(g, _debug)
+
 def main2():
 	if len(sys.argv) == 2:
 
-		print('Main2, grammarGen Test:')
+		print('Main2, testAllExternal:')
 
-		inFile = sys.argv[1]
-		grammarGen(inFile,True)
+		testNum = int(sys.argv[1])
+		testAllExternal(testNum, False)
 	elif len(sys.argv) == 3:
 
-		print("Main2, grammarGenIters Test:")
+		print("Main2, grammarFileGenIters Test:")
 
 		grammarFile = sys.argv[1]
 		testStr = sys.argv[2]
@@ -76,11 +92,14 @@ def main2():
 			if testNum < 0:
 				debug = True
 				testNum = -1*testNum
-			grammarGenIters(grammarFile, testNum, debug)
+			if testNum == 0:
+				grammarFileGen(grammarFile, debug)
+			else:
+				grammarFileGenIters(grammarFile, testNum, debug)
 		except ValueError:
 			parserTest(grammarFile, testStr)
 	else:
-		tokenizerTest()
+		testAllExternal()
 
 def main1():
 	if len(sys.argv) == 2:

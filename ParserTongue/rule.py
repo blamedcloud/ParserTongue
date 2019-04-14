@@ -87,6 +87,7 @@ class Rule(object):
 						self._externalName = tmpExternalName
 						self.rhsTree = RHSTree(getRHSLeafTypeFromTokenType(identifierType))
 						self.rhsTree.createNode(self.tokens.currentToken())
+						self.tokens.nextToken()
 		if not self.external:
 			self.tokens.setIndex(index, exhausted)
 			self.rhsTree = self._parseRHS()
