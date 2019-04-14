@@ -66,7 +66,12 @@ class Parser(object):
 
 	def setGrammarAlphabet(self):
 		self.alphabet = self.grammar.getAlphabet()
-		self.ttl = getTTLForAlphabet(self.alphabet)
+		alphabetTTL = getTTLForAlphabet(self.alphabet)
+		if self.grammar.hasRegExTTs():
+			self.ttl = self.grammar.getRegExTTs()
+			self.ttl.extendWith(alphabetTTL)
+		else:
+			self.ttl = alphabetTTL
 
 	def setRuleTransform(self, ruleName, f):
 		self.grammar.setRuleTransformer(ruleName, f)

@@ -52,7 +52,7 @@ class JSONParser(object):
 	def __init__(self):
 		p = parser.Parser('json.ebnf', dependentGrammarFiles = ['../common.ebnf'])
 		p.setRuleTransform('number', lambda x: float(collapseToStr(x)))
-		p.setRuleTransform('string', lambda x: collapseToStr(x)[1:-1]) # remove the quotes
+		p.setRuleTransform('string', lambda x: str(x)[1:-1]) # get rid of quotes
 		p.setRuleTransform('array', lambda x: JsonArray(arrayTransform(x)))
 		p.setRuleTransform('object', objectTransform)
 		p.setRuleTransform('true', lambda x: True)

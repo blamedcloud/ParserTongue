@@ -12,6 +12,7 @@ class RHSType(Enum):
 	GROUP = 4
 	ALTERNATION = 5
 	CONCATENATION = 6
+	REGEX = 7
 
 
 class RHSKind(Enum):
@@ -21,7 +22,7 @@ class RHSKind(Enum):
 
 
 def getRHSKind(rhsType):
-	if rhsType is RHSType.IDENTIFIER or rhsType is RHSType.TERMINAL:
+	if rhsType is RHSType.IDENTIFIER or rhsType is RHSType.TERMINAL or rhsType is RHSType.REGEX:
 		return RHSKind.LEAF
 	if rhsType is RHSType.ALTERNATION or rhsType is RHSType.CONCATENATION:
 		return RHSKind.LIST
@@ -111,8 +112,8 @@ class RHSTree(object):
 	def expect(self, tokens, level = 0, debug = False):
 		index = tokens.getIndex()
 		exhausted = tokens.isExhausted()
-		error = None
-		value = Serializer(False, None, "Value never instantiated!")
+		error = "Value never instantiated!"
+		value = Serializer(False, None, error)
 
 		if debug:
 			print('\t'*level + "RHSTree.expect(), Type:", self.levelType.name, "; Level:",level)
@@ -130,6 +131,13 @@ class RHSTree(object):
 				yield Serializer(True, self.node.getValue(), None)
 			else:
 				error = "ERROR: Expected '" + str(self.node.getValue()) + "', got: '" + str(tokens.currentToken().getValue()) + "'"
+		elif self.levelType == RHSType.REGEX:
+			if (not tokens.isExhausted()) and self.node.isTypeOf(tokens.currentToken().getValue()):
+				thisToken = tokens.currentToken().getValue()
+				tokens.nextToken()
+				yield Serializer(True, thisToken, None)
+			else:
+				error = "ERROR: Expected token of type: '" + str(self.node.getName()) + "', got: '" + str(tokens.currentToken().getValue()) + "'"
 		elif self.levelType == RHSType.IDENTIFIER:
 			for value in self.link.expectMatch(tokens, level + 1, debug):
 				if value:
@@ -176,6 +184,7 @@ class RHSTree(object):
 			print('\t'*level + "After  Index:",tokens.getIndex())
 			print('\t'*level + "result:",False)
 			print('\t'*level + "Is Exhausted:",tokens.isExhausted())
+			print('\t'*level + 'Error:',str(error))
 			print('\t'*level + "value:",str(value), "\n")
 
 		yield Serializer(False, None, error)
@@ -241,6 +250,10 @@ class RHSTree(object):
 			treeSize += 1
 		elif self.levelType == RHSType.IDENTIFIER:
 			(isInfinite, treeSize) = self.link.walk(prevIdentifiers)
+		elif self.levelType == RHSType.REGEX:
+			# assume this is an infinite regex, because otherwise this shouldn't be here
+			isInfinite = True
+			treeSize = -1
 		elif self.levelType == RHSType.GROUP:
 			(isInfinite, treeSize) = self.children[0].walkTree(prevIdentifiers)
 		elif self.levelType == RHSType.OPTIONAL:

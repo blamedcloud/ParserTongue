@@ -2,7 +2,7 @@
 #grammar.py
 from errors import *
 from token import Token, TokenType
-from tokenizer import Tokenizer, getTTLForAlphabet
+from tokenizer import Tokenizer, getTTLForAlphabet, TokenizerTypeList
 from smallestStrings import smallestStrGen
 from rule import Rule
 from serializer import Serializer
@@ -18,6 +18,7 @@ class Grammar(object):
 		self._externalRuleDicts = {}
 		self._deferLinkage = deferLinkage
 		self._linkageDone = False
+		self._additionalTokenTypes = TokenizerTypeList()
 
 		full_text = ""
 		with open(grammarFile) as FILE:
@@ -40,6 +41,8 @@ class Grammar(object):
 					dependency = nextRule.getDependency()
 					if dependency not in self.externalDependencies:
 						self.externalDependencies.append(dependency)
+				if nextRule.isRegExRule():
+					self._additionalTokenTypes.addTokenType(nextRule.getRegExTT())
 				self.rules.append(nextRule)
 		except GrammarError as err:
 			print("Exception thrown while parsing rule",i)
@@ -64,6 +67,12 @@ class Grammar(object):
 
 	def setExternalRuleDicts(self, externalRuleDicts):
 		self._externalRuleDicts = externalRuleDicts
+
+	def getRegExTTs(self):
+		return self._additionalTokenTypes
+
+	def hasRegExTTs(self):
+		return (len(self._additionalTokenTypes) > 0)
 
 	def hasLinked(self):
 		return self._linkageDone

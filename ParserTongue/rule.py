@@ -3,6 +3,7 @@
 from errors import *
 from rhstree import RHSTree, RHSType, RHSKind, getRHSKind
 from tokenizer import defaultGrammarTTL
+from token import TokenType
 
 def identity(x):
 	return x
@@ -43,6 +44,8 @@ class Rule(object):
 		self.transformer = identity
 		self.external = False
 		self._externalName = None
+		self.regEx = False
+		self._reTT = None
 		self._parseRule()
 
 	def setTransformer(self, f):
@@ -53,6 +56,12 @@ class Rule(object):
 
 	def getDependency(self):
 		return self._externalName
+
+	def isRegExRule(self):
+		return self.regEx
+
+	def getRegExTT(self):
+		return self._reTT
 
 	def expectMatch(self, tokens, level = 0, debug = False):
 		for value in self.rhsTree.expect(tokens, level, debug):
@@ -100,6 +109,8 @@ class Rule(object):
 		tmpExternalName = None
 		index = self.tokens.getIndex()
 		exhausted = self.tokens.isExhausted()
+
+		# check if this is an external rule
 		if len(self.tokens) == 5: # all external rules are exactly 5 tokens long
 			identifierType = self.getTTByName('Identifier')
 			if self._currentTokenType() == identifierType:
@@ -110,16 +121,27 @@ class Rule(object):
 					if self._currentTokenType() == identifierType:
 						self.external = True
 						self._externalName = tmpExternalName
-						self.rhsTree = RHSTree(getRHSLeafTypeFromTokenType(identifierType))
+						self.rhsTree = RHSTree(RHSType.IDENTIFIER)
 						self.rhsTree.createNode(self.tokens.currentToken())
 						self.tokens.nextToken()
-		if not self.external:
+
+		# check if this is a regex rule
+		if len(self.tokens) == 4: # all regex rules are exactly 4 tokens long
+			if self._currentTokenType() == self.getTTByName('RegEx'):
+				self.tokens.nextToken()
+				if self._currentTokenType() == self.getTTByName('Terminal'):
+					self.regEx = True
+					self._reTT = TokenType(self.lhsToken.getValue(), self.tokens.currentToken().getValue())
+					self.rhsTree = RHSTree(RHSType.REGEX)
+					self.rhsTree.createNode(self._reTT)
+					self.tokens.nextToken()
+
+		if not self.external and not self.regEx:
 			self.tokens.setIndex(index, exhausted)
 			self.rhsTree = self._parseRHS()
 		if not self.tokens.isExhausted():
 			raise RuleParsingError("Didn't Exhaust all tokens!")
 
-	# NOTE: might need to pass the externalDicts into the rhsTree for dependency chains longer than 1.
 	def createLinkage(self, ruleDict, externalRuleDicts):
 		if not self.external:
 			self.rhsTree.addLinkage(ruleDict)
@@ -189,7 +211,7 @@ class Rule(object):
 						raise RuleParsingError("ERROR got bad control token: '"+ currentTokenStr +"' after '"+ workingKind.name +"' Kind.")
 				else:
 					raise RuleParsingError("ERROR got non-control token: '"+ currentTokenStr +"' after '"+ workingKind.name +"' Kind.")
-			else:	# workingTree.getKind() == RHSKind.LIST:
+			elif workingKind == RHSKind.LIST:
 				if currentType == self.getTTByName('Control'):
 					if currentTokenStr in [',', '|']:
 						if getRHSListTypeFromTokenValue(currentTokenStr) == workingTree.getType():
@@ -233,6 +255,8 @@ class Rule(object):
 						raise RuleParsingError("ERROR found bad control token: '" + currentTokenStr + "' after LIST Kind.")
 				else:
 					raise RuleParsingError("ERROR found token '" + currentTokenStr + "' of type: " + str(currentType))
+			else:
+				raise RuleParsingError("ERROR got unknown Tree kind: " + str(workingKind))
 		raise NotImplementedError # I must have missed something
 
 	def _currentTokenIsConcatenation(self):

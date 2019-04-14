@@ -5,6 +5,7 @@ import json
 def main():
 	jp = json.JSONParser()
 	testJson = jp.getJsonObj('testObj.json')
+#	testJson = jp.getJsonObj('small.json')
 	print(testJson)
 	return testJson
 

@@ -20,6 +20,12 @@ class TokenizerTypeList(object):
 			self._indexLookup[tt.getName()] = len(self)
 			self._typeList.append(tt)
 
+	def extendWith(self, tts):
+		if not isinstance(tts, TokenizerTypeList):
+			raise TypeError
+		for tt in tts:
+			self.addTokenType(tt)
+
 	def __getitem__(self, item):
 		if isinstance(item, int):
 			return self._typeList[item % len(self)]
@@ -51,6 +57,7 @@ def defaultGrammarTTL():
 	gTTL.addTokenType(TokenType("End", r';'))
 	gTTL.addTokenType(TokenType("Define", r'='))
 	gTTL.addTokenType(TokenType("External", r':'))
+	gTTL.addTokenType(TokenType("RegEx", r'~'))
 	gTTL.addTokenType(TokenType("Control", r'[()[\]{}|,]'))
 	gTTL.addTokenType(TokenType("Identifier", r'[a-zA-Z][a-zA-Z0-9_]*'))
 	gTTL.addTokenType(TokenType("Terminal", r'\'([^\']*)\'|"([^"]*)"'))
