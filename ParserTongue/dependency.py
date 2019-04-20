@@ -28,19 +28,16 @@ def populateDependencies(depTree, dependentGrammarDict):
 				depTree.addChild(Tree(dep, dependentGrammarDict[dep]))
 		else:
 			raise GrammarDependencyError("Missing Dependency! Dep = " + str(dep) + "; Node = " + name)
-	for i in range(len(depTree)):
-		child = depTree.getChild(i)
+	for child in depTree:
 		populateDependencies(child, dependentGrammarDict)
 
 def resolveDependencies(depTree):
 	if not depTree.getData().hasLinked():
 		neededRuleDicts = {}
-		if len(depTree) > 0:
-			for i in range(len(depTree)):
-				child = depTree.getChild(i)
-				childRuleDicts = resolveDependencies(child)
-				neededRuleDicts.update(childRuleDicts)
-				neededRuleDicts[child.getName()] = child.getData().getRuleDict()
+		for child in depTree:
+			childRuleDicts = resolveDependencies(child)
+			neededRuleDicts.update(childRuleDicts)
+			neededRuleDicts[child.getName()] = child.getData().getRuleDict()
 		depTree.getData().setExternalRuleDicts(neededRuleDicts)
 		depTree.getData().linkRules()
 	return depTree.getData().getExternalRuleDicts()
