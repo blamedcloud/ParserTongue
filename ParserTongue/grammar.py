@@ -83,6 +83,9 @@ class Grammar(object):
 	def getDependencies(self):
 		return self.externalDependencies
 
+	def hasDependencies(self):
+		return len(self.externalDependencies) > 0
+
 	def linkRules(self):
 		if not self._linkageDone:
 			for rule in self.rules:
