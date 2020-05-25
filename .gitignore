@@ -110,3 +110,6 @@ venv.bak/
 
 # testOut files
 testing/*.txt
+
+# java target
+java/target/
