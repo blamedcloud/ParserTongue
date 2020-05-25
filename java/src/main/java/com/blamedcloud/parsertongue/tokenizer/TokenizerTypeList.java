@@ -1,4 +1,4 @@
-package com.blamedcloud.parsertongue.core;
+package com.blamedcloud.parsertongue.tokenizer;
 
 import java.util.ArrayList;
 import java.util.HashMap;

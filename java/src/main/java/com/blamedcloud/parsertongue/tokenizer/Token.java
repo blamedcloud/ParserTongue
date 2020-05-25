@@ -1,4 +1,4 @@
-package com.blamedcloud.parsertongue.core;
+package com.blamedcloud.parsertongue.tokenizer;
 
 public class Token {
 

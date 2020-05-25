@@ -1,9 +1,12 @@
-package com.blamedcloud.parsertongue.core;
+package com.blamedcloud.parsertongue.tokenizer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+
+import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
+import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
 
 public class TokenizerTest {
 
