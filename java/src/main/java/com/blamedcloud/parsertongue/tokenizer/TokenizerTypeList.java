@@ -1,5 +1,14 @@
 package com.blamedcloud.parsertongue.tokenizer;
 
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.COMMENT_NAME;
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.CONTROL_NAME;
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.DEFINE_NAME;
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.END_NAME;
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.EXTERNAL_NAME;
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.IDENTIFIER_NAME;
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.REGEX_NAME;
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.TERMINAL_NAME;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -71,7 +80,14 @@ public class TokenizerTypeList implements Iterable<TokenType> {
 
     public static TokenizerTypeList defaultGrammarTTL() {
         TokenizerTypeList grammarTTL = new TokenizerTypeList();
-        // TODO: add tokentypes
+        grammarTTL.add(new TokenType(END_NAME, ";"));
+        grammarTTL.add(new TokenType(DEFINE_NAME, "="));
+        grammarTTL.add(new TokenType(EXTERNAL_NAME, ":"));
+        grammarTTL.add(new TokenType(REGEX_NAME, "~"));
+        grammarTTL.add(new TokenType(CONTROL_NAME, "[()\\[\\]{}|,]"));
+        grammarTTL.add(new TokenType(IDENTIFIER_NAME, "[a-zA-Z][a-zA-Z0-9_]*"));
+        grammarTTL.add(new TokenType(TERMINAL_NAME, "'([^']*)'|\"([^\"]*)\""));
+        grammarTTL.add(new TokenType(COMMENT_NAME, "(#.*\\n)|(#.*\\Z)", true));
         return grammarTTL;
     }
 

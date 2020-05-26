@@ -25,8 +25,10 @@ public class DefaultGrammarConstants {
 
     public static final Set<String> CONTROL_SEPARATOR_TOKENS = new HashSet<>(Arrays.asList(ALTERNATION_SEP, CONCATENATION_SEP));
 
+    public static final String COMMENT_NAME = "Comment";
     public static final String CONTROL_NAME = "Control";
     public static final String DEFINE_NAME = "Define";
+    public static final String END_NAME = "End";
     public static final String EXTERNAL_NAME = "External";
     public static final String IDENTIFIER_NAME = "Identifier";
     public static final String REGEX_NAME = "Regex";

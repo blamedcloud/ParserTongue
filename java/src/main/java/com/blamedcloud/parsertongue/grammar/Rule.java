@@ -107,6 +107,10 @@ public class Rule {
         return lhsToken;
     }
 
+    public RHSTree rhs() {
+        return rhsTree;
+    }
+
     public TokenType getTTByName(String name) {
         return ruleTokens.getTTL().get(name);
     }

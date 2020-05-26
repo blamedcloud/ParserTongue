@@ -5,10 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
-import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
-
-public class TokenizerTest {
+public class AlphabetTokenizerTest {
 
     @Test
     public void alphabetTTLTest() {

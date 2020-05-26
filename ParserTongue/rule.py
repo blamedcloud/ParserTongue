@@ -96,16 +96,16 @@ class Rule(object):
 
 	def _parseRule(self):
 		if len(self.tokens) < 3:
-			raise RuleParsingError("Rule has too few tokens: " + raw)
+			raise RuleParsingError("Rule has too few tokens")
 		if self._currentTokenType() == self.getTTByName('Identifier'):
 			self.lhsToken = self.tokens.currentToken()
 			self.tokens.nextToken()
 		else:
-			raise RuleParsingError("LHS is not an identifier: " + raw)
+			raise RuleParsingError("LHS is not an identifier")
 		if self._currentTokenType() == self.getTTByName('Define'):
 			self.tokens.nextToken()
 		else:
-			raise RuleParsingError("Rule has no '=': " + raw)
+			raise RuleParsingError("Rule has no '='")
 		tmpExternalName = None
 		index = self.tokens.getIndex()
 		exhausted = self.tokens.isExhausted()

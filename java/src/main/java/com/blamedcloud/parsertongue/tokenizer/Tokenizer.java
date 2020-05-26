@@ -186,8 +186,22 @@ public class Tokenizer {
                         if (ttMatcher.group().length() > 0) {
                             hasMatch = true;
                             if (!tt.isIgnored()) {
-                                // the python code does something different here, but I think this is fine ...
-                                tokens.add(new Token(ttMatcher.group(), tt));
+                                if (ttMatcher.groupCount() > 0) {
+                                    // concatenate all the "real" groups.
+                                    // group 0 is the entire match, and is not counted
+                                    // towards groupCount().
+                                    StringBuilder sb = new StringBuilder();
+                                    for (int i = 1; i < ttMatcher.groupCount() + 1; i++) {
+                                        String groupValue = ttMatcher.group(i);
+                                        if (groupValue != null && groupValue.length() > 0) {
+                                            sb.append(groupValue);
+                                        }
+                                    }
+                                    tokens.add(new Token(sb.toString(), tt, ttMatcher.group(0)));
+                                } else {
+                                    // no groups to worry about, token value is entire match
+                                    tokens.add(new Token(ttMatcher.group(), tt));
+                                }
                             }
                             rawText = rawText.substring(ttMatcher.end());
                             break;
