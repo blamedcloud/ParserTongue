@@ -137,6 +137,14 @@ public class RHSTree {
         }
     }
 
+    public Rule getLink() {
+        if (link != null) {
+            return link;
+        } else {
+            throw new RuntimeException("link is null!");
+        }
+    }
+
     @Override
     public String toString() {
         return representation("", "    ");
@@ -158,7 +166,7 @@ public class RHSTree {
         return sb.toString();
     }
 
-    public ParseResultTransformer expect(Tokenizer tokens) {
+    public ParseResultExpecterator getExpecterator(Tokenizer tokens) {
         // TODO
         return null;
     }

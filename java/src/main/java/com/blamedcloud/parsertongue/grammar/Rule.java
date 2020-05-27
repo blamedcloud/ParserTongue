@@ -59,6 +59,10 @@ public class Rule {
         transformer = f;
     }
 
+    public Function<ParseResult, ParseResult> getTransformer() {
+        return transformer;
+    }
+
     public boolean hasDependency() {
         return external;
     }
@@ -75,9 +79,8 @@ public class Rule {
         return regexTokenType;
     }
 
-    public ParseResultTransformer expectMatch(Tokenizer tokens) {
-        // TODO
-        return null;
+    public ParseResultExpecterator getExpecterator(Tokenizer tokens) {
+        return new RuleExpecterator(this, tokens);
     }
 
     public WalkResult walk() {
@@ -189,7 +192,6 @@ public class Rule {
                 ruleTokens.nextToken();
                 if (currentTokenTypeIs(TERMINAL_NAME)) {
                     regex = true;
-                    // the regex here might need to be stripped of quotes ... TODO
                     regexTokenType = new TokenType(lhsToken.getValue(), ruleTokens.currentToken().getValue());
                     rhsTree = new RHSTree(RHSType.REGEX);
                     rhsTree.createRegexNode(regexTokenType);
