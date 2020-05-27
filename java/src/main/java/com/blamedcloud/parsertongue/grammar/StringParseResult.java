@@ -12,4 +12,9 @@ public class StringParseResult implements ParseResult {
         return value;
     }
 
+    @Override
+    public String toString() {
+        return value;
+    }
+
 }

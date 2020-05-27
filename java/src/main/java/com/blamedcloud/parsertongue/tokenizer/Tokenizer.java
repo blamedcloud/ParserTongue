@@ -1,5 +1,7 @@
 package com.blamedcloud.parsertongue.tokenizer;
 
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.EMPTY_NAME;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -82,6 +84,11 @@ public class Tokenizer {
             if (tt.isTypeOf(value)) {
                 return tt;
             }
+        }
+        if (value.length() == 0) {
+            // if the empty string doesn't have a token type, make one up:
+            TokenType emptyType = new TokenType(EMPTY_NAME, "");
+            return emptyType;
         }
         throw new RuntimeException("Token '" + value + "' does not match any known token types!");
     }

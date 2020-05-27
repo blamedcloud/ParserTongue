@@ -34,4 +34,6 @@ public class DefaultGrammarConstants {
     public static final String REGEX_NAME = "Regex";
     public static final String TERMINAL_NAME = "Terminal";
 
+    public static final String EMPTY_NAME = "Empty";
+
 }

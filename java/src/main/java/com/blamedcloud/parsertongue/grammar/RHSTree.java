@@ -167,8 +167,20 @@ public class RHSTree {
     }
 
     public ParseResultExpecterator getExpecterator(Tokenizer tokens) {
-        // TODO
-        return null;
+        if (levelType == RHSType.TERMINAL) {
+            return new TerminalExpecterator(this, tokens);
+        } else if (levelType == RHSType.REGEX) {
+            return new RegexExpecterator(this, tokens);
+        } else if (levelType == RHSType.IDENTIFIER) {
+            return new IdentifierExpecterator(this, tokens);
+        } else if (levelType == RHSType.GROUP) {
+            return new GroupExpecterator(this, tokens);
+        } else if (levelType == RHSType.OPTIONAL) {
+            return new OptionalExpecterator(this, tokens);
+        } else if (levelType == RHSType.ALTERNATION) {
+            return new AlternationExpecterator(this, tokens);
+        }
+        throw new RuntimeException("unknown level type");
     }
 
     private ParseResultTransformer expectRepeat(Tokenizer tokens) {

@@ -26,6 +26,11 @@ public class ParseResultTransformer {
         return errorMessage;
     }
 
+    @Override
+    public String toString() {
+        return "{valid: '" + valid + "'; result: '" + result + "'; error: '" + errorMessage + "'}";
+    }
+
     public ParseResultTransformer transform(Function<ParseResult, ParseResult> f) {
         if (valid) {
             return new ParseResultTransformer(valid, f.apply(result), errorMessage);

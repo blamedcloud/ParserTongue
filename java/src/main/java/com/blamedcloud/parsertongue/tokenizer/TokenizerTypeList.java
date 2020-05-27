@@ -10,6 +10,7 @@ import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.REG
 import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.TERMINAL_NAME;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -99,6 +100,14 @@ public class TokenizerTypeList implements Iterable<TokenType> {
             alphabetTTL.add(new TokenType(letter, letter));
         }
         return alphabetTTL;
+    }
+
+    public static TokenizerTypeList getTTLForTerminals(Collection<String> terminals) {
+        TokenizerTypeList terminalsTTL = new TokenizerTypeList();
+        for (String terminal : terminals) {
+            terminalsTTL.add(new TokenType(terminal, terminal));
+        }
+        return terminalsTTL;
     }
 
 }
