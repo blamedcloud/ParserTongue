@@ -156,6 +156,30 @@ public class RuleExpecteratorTest {
     }
 
     @Test
+    public void simpleConcatTest() {
+        Rule rule = createRule("start = 'a' , 'b' , 'a'");
+        TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("abc");
+
+        ParseResultTransformer result;
+
+        result = parseString(rule, "aba", ttl);
+        assertTrue(result.isValid());
+        assertEquals("[a, b, a]", result.getResult().toString());
+
+        result = parseString(rule, "aab", ttl);
+        assertFalse(result.isValid());
+
+        result = parseString(rule, "ab", ttl);
+        assertFalse(result.isValid());
+
+        result = parseString(rule, "ba", ttl);
+        assertFalse(result.isValid());
+
+        result = parseString(rule, "abac", ttl);
+        assertFalse(result.isValid());
+    }
+
+    @Test
     public void complexRuleTest() {
         Rule rule = createRule("start = 'a' | ('b' | [ 'c' | 'd' ] ) | 'e'");
         TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("abcdef");
@@ -188,7 +212,6 @@ public class RuleExpecteratorTest {
 
         result = parseString(rule, "f", ttl);
         assertFalse(result.isValid());
-
     }
 
     private Rule createRule(String ruleInput) {

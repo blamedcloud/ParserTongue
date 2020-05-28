@@ -4,36 +4,36 @@ import java.util.Optional;
 
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 
-public class RepeatExpecterator extends ParseResultExpecterator {
+public class ConcatenationExpecterator extends ParseResultExpecterator {
 
     private RHSTree tree;
+    private int childIndex;
     private ParseResultExpecterator childExpecterator;
     private boolean firstIteration;
-    private boolean secondIteration;
     private String lastError;
 
     private boolean useChild;
-    private ParseResultExpecterator repeatExpecterator;
+    private ParseResultExpecterator concatExpecterator;
     private ListParseResult childResult;
-    private boolean firstRepeatIteration;
+    private boolean firstConcatIteration;
 
-    protected RepeatExpecterator(RHSTree tree, Tokenizer tokenizer) {
+    protected ConcatenationExpecterator(RHSTree tree, int index, Tokenizer tokenizer) {
         super(tokenizer);
         this.tree = tree;
+        childIndex = index;
         childExpecterator = null;
         firstIteration = true;
-        secondIteration = false;
         lastError = null;
 
         useChild = false;
-        repeatExpecterator = null;
+        concatExpecterator = null;
         childResult = null;
-        firstRepeatIteration = false;
+        firstConcatIteration = false;
     }
 
     @Override
     public boolean hasNext() {
-        if (firstIteration || secondIteration || firstRepeatIteration || !useChild) {
+        if (firstIteration || firstConcatIteration || !useChild) {
             return true;
         } else {
             return childExpecterator.hasNext();
@@ -42,22 +42,15 @@ public class RepeatExpecterator extends ParseResultExpecterator {
 
     @Override
     public Optional<ParseResultTransformer> tryNext() {
-        // for the very first iteration, just try not returning from this repeat
         if (firstIteration) {
-            firstIteration = false;
-            secondIteration = true;
-            return Optional.of(new ParseResultTransformer(true, new ListParseResult(), null));
-        }
-
-        if (secondIteration) {
-            childExpecterator = tree.getChild().getExpecterator(tokens);
+            childExpecterator = tree.getChild(childIndex).getExpecterator(tokens);
             useChild = true;
         }
 
         if (useChild) {
             if (childExpecterator.hasNext()) {
-                if (secondIteration) {
-                    secondIteration = false;
+                if (firstIteration) {
+                    firstIteration = false;
                 } else {
                     childExpecterator.reset();
                 }
@@ -66,30 +59,30 @@ public class RepeatExpecterator extends ParseResultExpecterator {
                     ParseResultTransformer actualResult = optionalResult.get();
                     if (actualResult.isValid()) {
                         ParseResultTransformer newResult = actualResult.transform(ListParseResult::wrapInList);
-                        if (!tokens.isExhausted()) {
-                            repeatExpecterator = tree.getExpecterator(tokens);
-                            useChild = false;
-                            firstRepeatIteration = true;
-                            childResult = (ListParseResult)newResult.getResult();
-                            return tryNext();
-                        } else {
+                        if (childIndex + 1 == tree.size()) {
                             return Optional.of(newResult);
+                        } else {
+                            concatExpecterator = new ConcatenationExpecterator(tree, childIndex + 1, tokens);
+                            useChild = false;
+                            firstConcatIteration = true;
+                            childResult = (ListParseResult) newResult.getResult();
+                            return tryNext();
                         }
                     } else {
                         lastError = actualResult.getError();
                     }
                 }
             } else {
-                secondIteration = false;
+                firstIteration = false;
             }
         } else {
-            if (repeatExpecterator.hasNext()) {
-                if (firstRepeatIteration) {
-                    firstRepeatIteration = false;
+            if (concatExpecterator.hasNext()) {
+                if (firstConcatIteration) {
+                    firstConcatIteration = false;
                 } else {
-                    repeatExpecterator.reset();
+                    concatExpecterator.reset();
                 }
-                Optional<ParseResultTransformer> optionalResult = repeatExpecterator.tryNext();
+                Optional<ParseResultTransformer> optionalResult = concatExpecterator.tryNext();
                 if (optionalResult.isPresent()) {
                     ParseResultTransformer actualResult = optionalResult.get();
                     if (actualResult.isValid()) {
@@ -104,10 +97,10 @@ public class RepeatExpecterator extends ParseResultExpecterator {
                     }
                 }
             } else {
-                repeatExpecterator = null;
+                concatExpecterator = null;
                 useChild = true;
                 childResult = null;
-                firstRepeatIteration = false;
+                firstConcatIteration = false;
                 return tryNext();
             }
         }

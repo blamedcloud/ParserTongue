@@ -181,18 +181,10 @@ public class RHSTree {
             return new AlternationExpecterator(this, tokens);
         } else if (levelType == RHSType.REPEAT) {
             return new RepeatExpecterator(this, tokens);
+        } else if (levelType == RHSType.CONCATENATION) {
+            return new ConcatenationExpecterator(this, 0, tokens);
         }
         throw new RuntimeException("unknown level type");
-    }
-
-    private ParseResultTransformer expectRepeat(Tokenizer tokens) {
-        // TODO
-        return null;
-    }
-
-    private ParseResultTransformer expectConcatenation(Tokenizer tokens, int startChild) {
-        // TODO
-        return null;
     }
 
     public WalkResult walkTree(Set<String> previousIdentifiers) {
