@@ -1,0 +1,4 @@
+
+start = [ equal ] ;
+
+equal = 'a' , equal, 'b' | 'b' , equal , 'a' | 'a', 'b', equal | 'b', 'a', equal | 'a','b' | 'b','a' ;

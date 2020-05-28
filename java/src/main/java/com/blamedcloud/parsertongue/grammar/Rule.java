@@ -123,12 +123,12 @@ public class Rule {
         return lhsToken.getValue() + ":\n" + rhsTree.toString();
     }
 
-    public void createLinkage(Map<String, Rule> ruleMap, Map<String, Map<String, Rule>> externalRuleDicts) {
+    public void createLinkage(Map<String, Rule> ruleMap, Map<String, Map<String, Rule>> externalRuleMaps) {
         if (!external) {
             rhsTree.addLinkage(ruleMap);
         } else {
-            if (externalRuleDicts.containsKey(externalName)) {
-                rhsTree.addLinkage(externalRuleDicts.get(externalName));
+            if (externalRuleMaps.containsKey(externalName)) {
+                rhsTree.addLinkage(externalRuleMaps.get(externalName));
             } else {
                 throw new RuntimeException("No external rule dict by the name of: " + externalName);
             }
