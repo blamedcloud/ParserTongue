@@ -17,4 +17,9 @@ public class StringParseResult implements ParseResult {
         return value;
     }
 
+    @Override
+    public StringParseResult copy() {
+        return new StringParseResult(value);
+    }
+
 }

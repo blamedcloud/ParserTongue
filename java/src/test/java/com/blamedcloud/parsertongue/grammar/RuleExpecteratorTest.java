@@ -116,6 +116,46 @@ public class RuleExpecteratorTest {
     }
 
     @Test
+    public void simpleRepeatTest() {
+        Rule rule = createRule("start = { 'a' }");
+        TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("ab");
+
+        ParseResultTransformer result;
+
+        result = parseString(rule, "", ttl);
+        assertTrue(result.isValid());
+        assertEquals("[]", result.getResult().toString());
+
+        result = parseString(rule, "a", ttl);
+        assertTrue(result.isValid());
+        assertEquals("[a]", result.getResult().toString());
+
+        result = parseString(rule, "aa", ttl);
+        assertTrue(result.isValid());
+        assertEquals("[a, a]", result.getResult().toString());
+
+        result = parseString(rule, "aaa", ttl);
+        assertTrue(result.isValid());
+        assertEquals("[a, a, a]", result.getResult().toString());
+
+        result = parseString(rule, "aaaa", ttl);
+        assertTrue(result.isValid());
+        assertEquals("[a, a, a, a]", result.getResult().toString());
+
+        result = parseString(rule, "aaba", ttl);
+        assertFalse(result.isValid());
+
+        result = parseString(rule, "ab", ttl);
+        assertFalse(result.isValid());
+
+        result = parseString(rule, "aab", ttl);
+        assertFalse(result.isValid());
+
+        result = parseString(rule, "b", ttl);
+        assertFalse(result.isValid());
+    }
+
+    @Test
     public void complexRuleTest() {
         Rule rule = createRule("start = 'a' | ('b' | [ 'c' | 'd' ] ) | 'e'");
         TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("abcdef");

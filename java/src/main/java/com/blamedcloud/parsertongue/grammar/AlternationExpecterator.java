@@ -32,7 +32,6 @@ public class AlternationExpecterator extends ParseResultExpecterator {
         }
     }
 
-    // TODO: test this
     @Override
     public Optional<ParseResultTransformer> tryNext() {
         if (firstIteration) {

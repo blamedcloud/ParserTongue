@@ -179,6 +179,8 @@ public class RHSTree {
             return new OptionalExpecterator(this, tokens);
         } else if (levelType == RHSType.ALTERNATION) {
             return new AlternationExpecterator(this, tokens);
+        } else if (levelType == RHSType.REPEAT) {
+            return new RepeatExpecterator(this, tokens);
         }
         throw new RuntimeException("unknown level type");
     }
