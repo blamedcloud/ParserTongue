@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
+import com.blamedcloud.parsertongue.smallstrings.SmallestStringIterator;
 import com.blamedcloud.parsertongue.tokenizer.Token;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
@@ -252,25 +253,29 @@ public class Grammar {
         return alphabet;
     }
 
-//    public Map<String, Boolean> classifyFirstNStrings(int n, boolean ignoreWhiteSpace) {
-//        if (!linkageDone) {
-//            throw new RuntimeException("Cannot classify without linking!");
-//        }
-//        Map<String, Boolean> classification = new HashMap<>();
-//
-//        Set<String> alphabet = getAlphabet();
-//        if (!alphabet.contains("")) {
-//            alphabet.add("");
-//        }
-//        Tokenizer tokenizer = new Tokenizer(TokenizerTypeList.getTTLForTerminals(alphabet), ignoreWhiteSpace);
-//        tokenizer.tokenize("");
-//        classification.put("", isInLanguage(tokenizer));
-//        alphabet.remove("");
-//        n--;
-//
-//        // TODO
-//
-//        return classification;
-//    }
+    public Map<String, Boolean> classifyFirstNStrings(int n) {
+        if (!linkageDone) {
+            throw new RuntimeException("Cannot classify without linking!");
+        }
+        Map<String, Boolean> classification = new HashMap<>();
+
+        Set<String> alphabet = getAlphabet();
+        if (!alphabet.contains("")) {
+            alphabet.add("");
+        }
+        Tokenizer tokenizer = new Tokenizer(TokenizerTypeList.getTTLForTerminals(alphabet), false);
+        tokenizer.tokenize("");
+        classification.put("", isInLanguage(tokenizer));
+        alphabet.remove("");
+        n--;
+        SmallestStringIterator smallestStringIterator = new SmallestStringIterator(alphabet);
+        while (n > 0) {
+            String s = smallestStringIterator.next();
+            tokenizer.tokenize(s);
+            classification.put(s, isInLanguage(tokenizer));
+            n--;
+        }
+        return classification;
+    }
 
 }

@@ -1,9 +1,11 @@
 package com.blamedcloud.parsertongue.grammar;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.util.Map;
 
 import org.junit.Test;
 
@@ -74,6 +76,13 @@ public class GrammarTest {
         assertFalse(isInLanguage(grammar, "aab", ttl));
         assertFalse(isInLanguage(grammar, "bab", ttl));
         assertFalse(isInLanguage(grammar, "aabab", ttl));
+
+        Map<String, Boolean> classification = grammar.classifyFirstNStrings(50);
+        for (Map.Entry<String, Boolean> entry : classification.entrySet()) {
+            String string = entry.getKey();
+            boolean correctClassification = countOccurences(string, "a") == countOccurences(string, "b");
+            assertEquals(correctClassification, entry.getValue());
+        }
     }
 
     @Test
@@ -90,6 +99,17 @@ public class GrammarTest {
         assertFalse(isInLanguage(grammar, "aab", ttl));
         assertFalse(isInLanguage(grammar, "ab", ttl));
         assertFalse(isInLanguage(grammar, "aabab", ttl));
+
+        Map<String, Boolean> classification = grammar.classifyFirstNStrings(50);
+        for (Map.Entry<String, Boolean> entry : classification.entrySet()) {
+            String string = entry.getKey();
+            boolean correctClassification = countOccurences(string, "a") < countOccurences(string, "b");
+            assertEquals(correctClassification, entry.getValue());
+        }
+    }
+
+    private int countOccurences(String string, String character) {
+        return string.length() - string.replace(character, "").length();
     }
 
     private boolean isInLanguage(Grammar grammar, String input, TokenizerTypeList ttl) {

@@ -14,8 +14,6 @@ public abstract class ParseResultExpecterator implements Expecterator<ParseResul
         initialExhausted = tokenizer.isExhausted();
     }
 
-    // TODO: the very initial values might not be the right ones to reset to...
-    // more thinking / testing required
     @Override
     public void reset() {
         tokens.setIndex(initialIndex, initialExhausted);
