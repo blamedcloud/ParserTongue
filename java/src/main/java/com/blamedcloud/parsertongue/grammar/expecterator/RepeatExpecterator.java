@@ -1,7 +1,10 @@
-package com.blamedcloud.parsertongue.grammar;
+package com.blamedcloud.parsertongue.grammar.expecterator;
 
 import java.util.Optional;
 
+import com.blamedcloud.parsertongue.grammar.ListParseResult;
+import com.blamedcloud.parsertongue.grammar.ParseResultTransformer;
+import com.blamedcloud.parsertongue.grammar.RHSTree;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 
 public class RepeatExpecterator extends ParseResultExpecterator {
@@ -17,7 +20,7 @@ public class RepeatExpecterator extends ParseResultExpecterator {
     private ListParseResult childResult;
     private boolean firstRepeatIteration;
 
-    protected RepeatExpecterator(RHSTree tree, Tokenizer tokenizer) {
+    public RepeatExpecterator(RHSTree tree, Tokenizer tokenizer) {
         super(tokenizer);
         this.tree = tree;
         childExpecterator = null;

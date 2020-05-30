@@ -54,7 +54,7 @@ public class ListParseResult implements ParseResult {
         return copyResult;
     }
 
-    static ListParseResult wrapInList(ParseResult input) {
+    public static ListParseResult wrapInList(ParseResult input) {
         return new ListParseResult(input);
     }
 

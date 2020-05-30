@@ -1,7 +1,9 @@
-package com.blamedcloud.parsertongue.grammar;
+package com.blamedcloud.parsertongue.grammar.expecterator;
 
 import java.util.Optional;
 
+import com.blamedcloud.parsertongue.grammar.ParseResultTransformer;
+import com.blamedcloud.parsertongue.grammar.Rule;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 
 public class RuleExpecterator extends ParseResultExpecterator {
@@ -10,7 +12,7 @@ public class RuleExpecterator extends ParseResultExpecterator {
     private ParseResultExpecterator rhsExpecterator;
     private boolean firstIteration;
 
-    protected RuleExpecterator(Rule rule, Tokenizer tokenizer) {
+    public RuleExpecterator(Rule rule, Tokenizer tokenizer) {
         super(tokenizer);
         this.rule = rule;
         rhsExpecterator = null;

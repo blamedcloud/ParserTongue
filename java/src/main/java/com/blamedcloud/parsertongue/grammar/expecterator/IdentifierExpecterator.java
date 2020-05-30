@@ -1,20 +1,22 @@
-package com.blamedcloud.parsertongue.grammar;
+package com.blamedcloud.parsertongue.grammar.expecterator;
 
 import java.util.Optional;
 
+import com.blamedcloud.parsertongue.grammar.ParseResultTransformer;
+import com.blamedcloud.parsertongue.grammar.RHSTree;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 
-public class GroupExpecterator extends ParseResultExpecterator {
+public class IdentifierExpecterator extends ParseResultExpecterator {
 
     private RHSTree tree;
-    private ParseResultExpecterator childExpecterator;
+    private ParseResultExpecterator linkExpecterator;
     private boolean firstIteration;
     private String lastError;
 
-    protected GroupExpecterator(RHSTree tree, Tokenizer tokenizer) {
+    public IdentifierExpecterator(RHSTree tree, Tokenizer tokenizer) {
         super(tokenizer);
         this.tree = tree;
-        childExpecterator = null;
+        linkExpecterator = null;
         firstIteration = true;
         lastError = null;
     }
@@ -24,23 +26,23 @@ public class GroupExpecterator extends ParseResultExpecterator {
         if (firstIteration) {
             return true;
         } else {
-            return childExpecterator.hasNext();
+            return linkExpecterator.hasNext();
         }
     }
 
     @Override
     public Optional<ParseResultTransformer> tryNext() {
         if (firstIteration) {
-            childExpecterator = tree.getChild().getExpecterator(tokens);
+            linkExpecterator = tree.getLink().getExpecterator(tokens);
         }
 
-        if (childExpecterator.hasNext()) {
+        if (linkExpecterator.hasNext()) {
             if (firstIteration) {
                 firstIteration = false;
             } else {
                 reset();
             }
-            Optional<ParseResultTransformer> optionalResult = childExpecterator.tryNext();
+            Optional<ParseResultTransformer> optionalResult = linkExpecterator.tryNext();
             if (optionalResult.isPresent()) {
                 ParseResultTransformer actualResult = optionalResult.get();
                 if (actualResult.isValid()) {

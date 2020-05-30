@@ -1,7 +1,10 @@
-package com.blamedcloud.parsertongue.grammar;
+package com.blamedcloud.parsertongue.grammar.expecterator;
 
 import java.util.Optional;
 
+import com.blamedcloud.parsertongue.grammar.ListParseResult;
+import com.blamedcloud.parsertongue.grammar.ParseResultTransformer;
+import com.blamedcloud.parsertongue.grammar.RHSTree;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 
 public class ConcatenationExpecterator extends ParseResultExpecterator {
@@ -17,7 +20,7 @@ public class ConcatenationExpecterator extends ParseResultExpecterator {
     private ListParseResult childResult;
     private boolean firstConcatIteration;
 
-    protected ConcatenationExpecterator(RHSTree tree, int index, Tokenizer tokenizer) {
+    public ConcatenationExpecterator(RHSTree tree, int index, Tokenizer tokenizer) {
         super(tokenizer);
         this.tree = tree;
         childIndex = index;

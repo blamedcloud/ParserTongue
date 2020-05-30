@@ -1,7 +1,10 @@
-package com.blamedcloud.parsertongue.grammar;
+package com.blamedcloud.parsertongue.grammar.expecterator;
 
 import java.util.Optional;
 
+import com.blamedcloud.parsertongue.grammar.ParseResultTransformer;
+import com.blamedcloud.parsertongue.grammar.RHSTree;
+import com.blamedcloud.parsertongue.grammar.StringParseResult;
 import com.blamedcloud.parsertongue.tokenizer.TokenType;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 
@@ -11,7 +14,7 @@ public class RegexExpecterator extends ParseResultExpecterator {
 
     private boolean haveNext;
 
-    protected RegexExpecterator(RHSTree tree, Tokenizer tokenizer) {
+    public RegexExpecterator(RHSTree tree, Tokenizer tokenizer) {
         super(tokenizer);
         regexNode = tree.getRegexNode();
         haveNext = true;

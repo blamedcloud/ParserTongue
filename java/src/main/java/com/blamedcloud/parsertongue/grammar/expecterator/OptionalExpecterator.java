@@ -1,31 +1,32 @@
-package com.blamedcloud.parsertongue.grammar;
+package com.blamedcloud.parsertongue.grammar.expecterator;
 
 import java.util.Optional;
 
+import com.blamedcloud.parsertongue.grammar.ParseResultTransformer;
+import com.blamedcloud.parsertongue.grammar.RHSTree;
+import com.blamedcloud.parsertongue.grammar.StringParseResult;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 
-public class AlternationExpecterator extends ParseResultExpecterator {
+public class OptionalExpecterator extends ParseResultExpecterator {
 
     private RHSTree tree;
     private ParseResultExpecterator childExpecterator;
-    private int childIndex;
-    private int numChildren;
     private boolean firstIteration;
+    private boolean secondIteration;
     private String lastError;
 
-    protected AlternationExpecterator(RHSTree tree, Tokenizer tokenizer) {
+    public OptionalExpecterator(RHSTree tree, Tokenizer tokenizer) {
         super(tokenizer);
         this.tree = tree;
         childExpecterator = null;
-        childIndex = 0;
-        numChildren = tree.size();
         firstIteration = true;
+        secondIteration = false;
         lastError = null;
     }
 
     @Override
     public boolean hasNext() {
-        if (firstIteration || childIndex < numChildren) {
+        if (firstIteration || secondIteration) {
             return true;
         } else {
             return childExpecterator.hasNext();
@@ -34,14 +35,21 @@ public class AlternationExpecterator extends ParseResultExpecterator {
 
     @Override
     public Optional<ParseResultTransformer> tryNext() {
+        // for the very first iteration, just try not returning from this optional
         if (firstIteration) {
-            childExpecterator = tree.getChild(childIndex).getExpecterator(tokens);
-            childIndex++;
+            firstIteration = false;
+            secondIteration = true;
+            return Optional.of(new ParseResultTransformer(true, new StringParseResult(""), null));
+        }
+
+        // the second and onward iterations should be the same as a GroupExpecterator
+        if (secondIteration) {
+            childExpecterator = tree.getChild().getExpecterator(tokens);
         }
 
         if (childExpecterator.hasNext()) {
-            if (firstIteration) {
-                firstIteration = false;
+            if (secondIteration) {
+                secondIteration = false;
             } else {
                 reset();
             }
@@ -53,19 +61,14 @@ public class AlternationExpecterator extends ParseResultExpecterator {
                 } else {
                     lastError = actualResult.getError();
                 }
-            } else {
-                return tryNext();
-            }
-        } else {
-            if (childIndex < numChildren) {
-                firstIteration = true;
-                return tryNext();
             } else if (lastError != null) {
                 return Optional.of(new ParseResultTransformer(false, null, lastError));
             }
+        } else {
+            secondIteration = false;
         }
-
         return Optional.empty();
     }
+
 
 }

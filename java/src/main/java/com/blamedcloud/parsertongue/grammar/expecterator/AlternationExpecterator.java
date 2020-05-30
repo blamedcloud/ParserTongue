@@ -1,46 +1,53 @@
-package com.blamedcloud.parsertongue.grammar;
+package com.blamedcloud.parsertongue.grammar.expecterator;
 
 import java.util.Optional;
 
+import com.blamedcloud.parsertongue.grammar.ParseResultTransformer;
+import com.blamedcloud.parsertongue.grammar.RHSTree;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 
-public class IdentifierExpecterator extends ParseResultExpecterator {
+public class AlternationExpecterator extends ParseResultExpecterator {
 
     private RHSTree tree;
-    private ParseResultExpecterator linkExpecterator;
+    private ParseResultExpecterator childExpecterator;
+    private int childIndex;
+    private int numChildren;
     private boolean firstIteration;
     private String lastError;
 
-    protected IdentifierExpecterator(RHSTree tree, Tokenizer tokenizer) {
+    public AlternationExpecterator(RHSTree tree, Tokenizer tokenizer) {
         super(tokenizer);
         this.tree = tree;
-        linkExpecterator = null;
+        childExpecterator = null;
+        childIndex = 0;
+        numChildren = tree.size();
         firstIteration = true;
         lastError = null;
     }
 
     @Override
     public boolean hasNext() {
-        if (firstIteration) {
+        if (firstIteration || childIndex < numChildren) {
             return true;
         } else {
-            return linkExpecterator.hasNext();
+            return childExpecterator.hasNext();
         }
     }
 
     @Override
     public Optional<ParseResultTransformer> tryNext() {
         if (firstIteration) {
-            linkExpecterator = tree.getLink().getExpecterator(tokens);
+            childExpecterator = tree.getChild(childIndex).getExpecterator(tokens);
+            childIndex++;
         }
 
-        if (linkExpecterator.hasNext()) {
+        if (childExpecterator.hasNext()) {
             if (firstIteration) {
                 firstIteration = false;
             } else {
                 reset();
             }
-            Optional<ParseResultTransformer> optionalResult = linkExpecterator.tryNext();
+            Optional<ParseResultTransformer> optionalResult = childExpecterator.tryNext();
             if (optionalResult.isPresent()) {
                 ParseResultTransformer actualResult = optionalResult.get();
                 if (actualResult.isValid()) {
@@ -48,14 +55,19 @@ public class IdentifierExpecterator extends ParseResultExpecterator {
                 } else {
                     lastError = actualResult.getError();
                 }
+            } else {
+                return tryNext();
+            }
+        } else {
+            if (childIndex < numChildren) {
+                firstIteration = true;
+                return tryNext();
             } else if (lastError != null) {
                 return Optional.of(new ParseResultTransformer(false, null, lastError));
             }
-        } else {
-            firstIteration = false;
         }
+
         return Optional.empty();
     }
-
 
 }

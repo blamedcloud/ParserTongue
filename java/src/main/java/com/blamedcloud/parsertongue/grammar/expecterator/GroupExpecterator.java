@@ -1,29 +1,29 @@
-package com.blamedcloud.parsertongue.grammar;
+package com.blamedcloud.parsertongue.grammar.expecterator;
 
 import java.util.Optional;
 
+import com.blamedcloud.parsertongue.grammar.ParseResultTransformer;
+import com.blamedcloud.parsertongue.grammar.RHSTree;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 
-public class OptionalExpecterator extends ParseResultExpecterator {
+public class GroupExpecterator extends ParseResultExpecterator {
 
     private RHSTree tree;
     private ParseResultExpecterator childExpecterator;
     private boolean firstIteration;
-    private boolean secondIteration;
     private String lastError;
 
-    protected OptionalExpecterator(RHSTree tree, Tokenizer tokenizer) {
+    public GroupExpecterator(RHSTree tree, Tokenizer tokenizer) {
         super(tokenizer);
         this.tree = tree;
         childExpecterator = null;
         firstIteration = true;
-        secondIteration = false;
         lastError = null;
     }
 
     @Override
     public boolean hasNext() {
-        if (firstIteration || secondIteration) {
+        if (firstIteration) {
             return true;
         } else {
             return childExpecterator.hasNext();
@@ -32,21 +32,13 @@ public class OptionalExpecterator extends ParseResultExpecterator {
 
     @Override
     public Optional<ParseResultTransformer> tryNext() {
-        // for the very first iteration, just try not returning from this optional
         if (firstIteration) {
-            firstIteration = false;
-            secondIteration = true;
-            return Optional.of(new ParseResultTransformer(true, new StringParseResult(""), null));
-        }
-
-        // the second and onward iterations should be the same as a GroupExpecterator
-        if (secondIteration) {
             childExpecterator = tree.getChild().getExpecterator(tokens);
         }
 
         if (childExpecterator.hasNext()) {
-            if (secondIteration) {
-                secondIteration = false;
+            if (firstIteration) {
+                firstIteration = false;
             } else {
                 reset();
             }
@@ -62,7 +54,7 @@ public class OptionalExpecterator extends ParseResultExpecterator {
                 return Optional.of(new ParseResultTransformer(false, null, lastError));
             }
         } else {
-            secondIteration = false;
+            firstIteration = false;
         }
         return Optional.empty();
     }
