@@ -1,0 +1,5 @@
+
+start = A,start,B,start | B,start,A,start | '';
+
+A = 'a';
+B = 'b';

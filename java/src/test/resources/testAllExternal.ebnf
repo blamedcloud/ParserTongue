@@ -1,0 +1,25 @@
+
+# test one of the following languages, prepend each with a number to differentiate them.
+start = '1' , test1 | '2' , test2 | '3' , test3 | '4' , test4 | '5' , test5 | '6' , test6;
+
+# a^n b^n . classic example
+# test1 = "a" , test1 , "b" | "" ;
+test1 = aToNbToN : start ;
+
+# a^n . another classic example
+# test2 = "a", test2 | '';
+test2 = aToN : start ;
+
+# b?(ab)*
+#test3 = [ 'b' ] , {'a','b'} ;
+test3 = bMaybe_abStar : start ;
+
+# strings with more 'b's than 'a's.
+test4 = moreBs : start ;
+
+# strings with an equal number of 'a's and 'b's
+test5 = equalABs : start ;
+
+# ba*c
+#test6 = 'b', ({'a'}, 'c');
+test6 = b_aStar_c:start ;

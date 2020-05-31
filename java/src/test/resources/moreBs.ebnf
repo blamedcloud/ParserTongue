@@ -1,0 +1,14 @@
+
+start = A, start, B, [start|equal] |
+        A, [start|equal], B, start |
+        B, [start|equal], A, start |
+        B, start, A, [start|equal] |
+        onlyB ;
+
+equal = A,equal,B,equal | B,equal,A,equal | '';
+
+onlyB = B, onlyB | B ;
+
+A = 'a';
+B = 'b';
+
