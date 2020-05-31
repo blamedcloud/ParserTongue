@@ -1,8 +1,14 @@
 
-start = {equal}, onlyb , {equal} ; 
+start = A, start, B, [start|equal] |
+        A, [start|equal], B, start |
+        B, [start|equal], A, start |
+        B, start, A, [start|equal] |
+        onlyB ;
 
-equal = 'a','b' | 'b','a' | 'a' , equal , 'b' | 'b' , equal , 'a' | 'a', 'b', equal | 'b', 'a', equal ;
+equal = A,equal,B,equal | B,equal,A,equal | '';
 
-# equal = equalABs : equal ;
+onlyB = B, onlyB | B ;
 
-onlyb = 'b', onlyb | 'b' ;
+A = 'a';
+B = 'b';
+

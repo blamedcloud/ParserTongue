@@ -1,0 +1,8 @@
+
+start = '' | singletons | A,start,A | B,start,B | C,start,C ;
+
+singletons = A | B | C ;
+
+A = 'aaa';
+B = 'bbbbb';
+C = 'ccccccc';

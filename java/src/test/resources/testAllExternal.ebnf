@@ -15,14 +15,10 @@ test2 = aToN : start ;
 test3 = bMaybe_abStar : start ;
 
 # strings with more 'b's than 'a's.
-#test4 = {equal}, onlyb , {equal} ; 
-#equal = 'a','b' | 'b','a' | 'a' , equal , 'b' | 'b' , equal , 'a' | 'a' , 'b', equal | 'b', 'a', equal;
-#onlyb = 'b', onlyb | 'b' ;
 test4 = moreBs : start ;
 
 # strings with an equal number of 'a's and 'b's
-test5 = [equal];
-equal = equalABs : equal ;
+test5 = equalABs : start ;
 
 # ba*c
 #test6 = 'b', ({'a'}, 'c');

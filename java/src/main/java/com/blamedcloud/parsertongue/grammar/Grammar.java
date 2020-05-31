@@ -199,6 +199,10 @@ public class Grammar {
         return tryParse(tokens).isValid();
     }
 
+    public WalkResult walk() {
+        return startRule.walk();
+    }
+
     public ParseResultTransformer tryParse(Tokenizer tokens) {
         if (!linkageDone) {
             throw new RuntimeException("Cannot try a parse without linking");

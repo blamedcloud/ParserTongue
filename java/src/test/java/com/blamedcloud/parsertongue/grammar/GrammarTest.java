@@ -14,6 +14,8 @@ import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
 
 public class GrammarTest {
 
+    private static final int TEST_ITERATIONS = 200;
+
     @Test
     public void testGrammar1() throws Exception {
         Grammar grammar = getGrammar("src/test/resources/b_aStar_c.ebnf");
@@ -77,11 +79,11 @@ public class GrammarTest {
         assertFalse(isInLanguage(grammar, "bab", ttl));
         assertFalse(isInLanguage(grammar, "aabab", ttl));
 
-        Map<String, Boolean> classification = grammar.classifyFirstNStrings(50);
+        Map<String, Boolean> classification = grammar.classifyFirstNStrings(TEST_ITERATIONS);
         for (Map.Entry<String, Boolean> entry : classification.entrySet()) {
             String string = entry.getKey();
             boolean correctClassification = countOccurences(string, "a") == countOccurences(string, "b");
-            assertEquals(correctClassification, entry.getValue());
+            assertEquals("incorrect classification of: " + string, correctClassification, entry.getValue());
         }
     }
 
@@ -95,16 +97,47 @@ public class GrammarTest {
         assertTrue(isInLanguage(grammar, "bab", ttl));
         assertTrue(isInLanguage(grammar, "baabb", ttl));
 
+        assertTrue(isInLanguage(grammar, "bbaab", ttl));
+        assertTrue(isInLanguage(grammar, "bbbbaabaa", ttl));
+
         assertFalse(isInLanguage(grammar, "a", ttl));
         assertFalse(isInLanguage(grammar, "aab", ttl));
         assertFalse(isInLanguage(grammar, "ab", ttl));
         assertFalse(isInLanguage(grammar, "aabab", ttl));
 
-        Map<String, Boolean> classification = grammar.classifyFirstNStrings(50);
+        Map<String, Boolean> classification = grammar.classifyFirstNStrings(TEST_ITERATIONS);
         for (Map.Entry<String, Boolean> entry : classification.entrySet()) {
             String string = entry.getKey();
             boolean correctClassification = countOccurences(string, "a") < countOccurences(string, "b");
-            assertEquals(correctClassification, entry.getValue());
+            assertEquals("incorrect classification of: " + string, correctClassification, entry.getValue());
+        }
+    }
+
+    @Test
+    public void testGrammarPalindrome() throws Exception {
+        Grammar grammar = getGrammar("src/test/resources/palindrome.ebnf");
+
+        ValidStringIterator validStringIterator = new ValidStringIterator(grammar, TEST_ITERATIONS);
+
+        while (validStringIterator.hasNext()) {
+            String nextString = validStringIterator.next();
+            String reverse = new StringBuilder(nextString).reverse().toString();
+            assertEquals("incorrect classification of: " + nextString, nextString, reverse);
+        }
+    }
+
+    @Test
+    public void testGrammarPalindromeChunks() throws Exception {
+        Grammar grammar = getGrammar("src/test/resources/palindromeChunks.ebnf");
+
+        ValidStringIterator validStringIterator = new ValidStringIterator(grammar);
+
+        int iterationCount = 0;
+        while (validStringIterator.hasNext() && iterationCount < TEST_ITERATIONS) {
+            String nextString = validStringIterator.next();
+            String reverse = new StringBuilder(nextString).reverse().toString();
+            assertEquals("incorrect classification of: " + nextString, nextString, reverse);
+            iterationCount++;
         }
     }
 

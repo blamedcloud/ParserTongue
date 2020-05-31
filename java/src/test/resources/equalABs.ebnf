@@ -1,4 +1,5 @@
 
-start = [ equal ] ;
+start = A,start,B,start | B,start,A,start | '';
 
-equal = 'a' , equal, 'b' | 'b' , equal , 'a' | 'a', 'b', equal | 'b', 'a', equal | 'a','b' | 'b','a' ;
+A = 'a';
+B = 'b';

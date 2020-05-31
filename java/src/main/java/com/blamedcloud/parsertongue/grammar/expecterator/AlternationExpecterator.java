@@ -61,6 +61,7 @@ public class AlternationExpecterator extends ParseResultExpecterator {
         } else {
             if (childIndex < numChildren) {
                 firstIteration = true;
+                reset();
                 return tryNext();
             } else if (lastError != null) {
                 return Optional.of(new ParseResultTransformer(false, null, lastError));
