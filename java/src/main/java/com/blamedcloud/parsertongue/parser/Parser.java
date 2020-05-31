@@ -148,8 +148,16 @@ public class Parser {
         return grammar.tryParse(tokens);
     }
 
+    public boolean checkFile(File parseFile) {
+        return checkFile(parseFile, ignoreWhiteSpaceDefault);
+    }
+
+    public boolean checkFile(File parseFile, boolean ignoreWhiteSpace) {
+        return parseFile(parseFile, ignoreWhiteSpace).isValid();
+    }
+
     public boolean checkString(String parseString) {
-        return parseString(parseString, ignoreWhiteSpaceDefault).isValid();
+        return checkString(parseString, ignoreWhiteSpaceDefault);
     }
 
     public boolean checkString(String parseString, boolean ignoreWhiteSpace) {
