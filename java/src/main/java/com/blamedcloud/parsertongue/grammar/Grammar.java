@@ -127,6 +127,56 @@ public class Grammar {
         } else {
             setStart(builder.startSymbol);
         }
+        checkLeftRecursion();
+    }
+
+    private void checkLeftRecursion() {
+        Set<String> directlyLeftRecursiveRules = new HashSet<>();
+        Map<String, Set<String>> directLeftCornerIdentifiers = new HashMap<>();
+        for (Map.Entry<String, Rule> entry : ruleMap.entrySet()) {
+            String ruleName = entry.getKey();
+            Rule rule = entry.getValue();
+            Set<String> dlcIdentifiersOfRule = rule.getDirectLeftCornerIdentifiers();
+            directLeftCornerIdentifiers.put(ruleName, dlcIdentifiersOfRule);
+
+            if (dlcIdentifiersOfRule.contains(ruleName)) {
+                directlyLeftRecursiveRules.add(ruleName);
+                rule.setDirectLeftRecursion(true);
+            }
+        }
+
+        Set<String> indirectlyLeftRecursiveRules = new HashSet<>();
+        Map<String, Set<String>> properLeftCornerIdentifiers = new HashMap<>();
+        for (Map.Entry<String, Rule> entry : ruleMap.entrySet()) {
+            String ruleName = entry.getKey();
+            Rule rule = entry.getValue();
+            Set<String> properLCIsOfRule = getTransitiveClosure(ruleName, directLeftCornerIdentifiers, new HashSet<>());
+            properLeftCornerIdentifiers.put(ruleName, properLCIsOfRule);
+            if (!directlyLeftRecursiveRules.contains(ruleName) && properLCIsOfRule.contains(ruleName)) {
+                indirectlyLeftRecursiveRules.add(ruleName);
+                rule.setIndirectLeftRecursion(true);
+            }
+        }
+    }
+
+    private <T> Set<T> getTransitiveClosure(T lhs, Map<T, Set<T>> relation, Set<T> alreadyRelated) {
+        Set<T> directlyRelated = relation.get(lhs);
+        for (T t : directlyRelated) {
+            if (!alreadyRelated.contains(t)) {
+                alreadyRelated.add(t);
+                alreadyRelated = getTransitiveClosure(t, relation, alreadyRelated);
+            }
+        }
+        return alreadyRelated;
+    }
+
+    public boolean containsLeftRecursion() {
+        for (Rule rule : rules) {
+            if (rule.hasLeftRecursion()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public TokenizerTypeList getRegexTokenTypes() {
