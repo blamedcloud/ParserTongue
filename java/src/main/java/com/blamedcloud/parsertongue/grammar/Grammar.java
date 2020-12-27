@@ -241,8 +241,12 @@ public class Grammar {
         }
     }
 
-    public String getStartRule() {
+    public String getStartRuleName() {
         return startRuleName;
+    }
+
+    public Rule getStartRule() {
+        return startRule;
     }
 
     public boolean isInLanguage(Tokenizer tokens) {
