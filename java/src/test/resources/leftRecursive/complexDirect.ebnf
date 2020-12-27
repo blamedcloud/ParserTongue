@@ -1,0 +1,8 @@
+
+start = first , second | third | "a" | "b" | start, "c" ;
+
+first = '1' ;
+
+second = '2' ;
+
+third = '3' ;
