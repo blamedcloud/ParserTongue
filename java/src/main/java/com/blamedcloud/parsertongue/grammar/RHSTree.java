@@ -21,12 +21,21 @@ import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 
 public class RHSTree {
 
+    // all RHSTree's have a kind and a type
+    private RHSKind levelKind;
     private RHSType levelType;
+
+    // which of these are defined depends on
+    // the levelKind and levelType of this tree.
     private List<RHSTree> children;
     private Token node;
     private TokenType regexNode;
-    private RHSKind levelKind;
     private Rule link;
+
+
+    private boolean hasDirectSugar;
+    private boolean hasNestedSugar;
+    private boolean checkedSugar;
 
     public RHSTree(RHSType type) {
         levelType = type;
@@ -35,6 +44,10 @@ public class RHSTree {
         node = null;
         regexNode = null;
         link = null;
+
+        hasDirectSugar = false;
+        hasNestedSugar = false;
+        checkedSugar = false;
     }
 
     public void addChild(RHSTree child) {
@@ -244,4 +257,48 @@ public class RHSTree {
         return new WalkResult(isInfinite, treeSize);
     }
 
+    protected void checkSugar() {
+        if (checkedSugar) {
+            return;
+        }
+        checkedSugar = true;
+
+        hasDirectSugar = false;
+        hasNestedSugar = false;
+
+        if (levelKind == RHSKind.SINGLE) {
+            hasDirectSugar = true;
+        }
+
+        if (levelKind == RHSKind.SINGLE || levelKind == RHSKind.LIST) {
+            for (RHSTree child : children) {
+                child.checkSugar();
+                if (child.hasSugar()) {
+                    hasNestedSugar = true;
+                }
+            }
+        }
+
+        if (levelType == RHSType.IDENTIFIER) {
+            link.checkSugar();
+            if (link.hasSugar()) {
+                hasNestedSugar = true;
+            }
+        }
+    }
+
+    public boolean hasSugar() {
+        if (!checkedSugar) {
+            checkSugar();
+        }
+        return hasDirectSugar || hasNestedSugar;
+    }
+
+    protected void deSugar(Grammar grammar, Rule parent) {
+        if (!hasSugar()) {
+            return;
+        }
+
+
+    }
 }

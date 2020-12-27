@@ -1,6 +1,7 @@
 package com.blamedcloud.parsertongue.grammar;
 
 import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.END_NAME;
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.IDENTIFIER_NAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,9 @@ public class Grammar {
     private boolean deferLinkage;
     private boolean linkageDone;
     private TokenizerTypeList additionalTokenTypes;
+
+    private boolean hasSugar;
+    private boolean checkedSugar;
 
     public static Builder newBuilder(File grammarFile) {
         return new Builder(grammarFile);
@@ -80,6 +84,9 @@ public class Grammar {
         linkageDone = false;
         additionalTokenTypes = new TokenizerTypeList();
 
+        hasSugar = false;
+        checkedSugar = false;
+
         String fullText;
         try {
             fullText = Files.readString(builder.grammarFile.toPath());
@@ -127,6 +134,8 @@ public class Grammar {
         } else {
             setStart(builder.startSymbol);
         }
+
+        checkSugar();
     }
 
     public TokenizerTypeList getRegexTokenTypes() {
@@ -281,6 +290,38 @@ public class Grammar {
             n--;
         }
         return classification;
+    }
+
+    private void checkSugar() {
+        if (checkedSugar) {
+            return;
+        }
+        checkedSugar = true;
+
+        hasSugar = false;
+        for (Rule rule : rules) {
+            rule.checkSugar();
+            if (rule.hasSugar()) {
+                hasSugar = true;
+            }
+        }
+    }
+
+    public boolean hasSugar() {
+        if (!checkedSugar) {
+            checkSugar();
+        }
+        return hasSugar;
+    }
+
+    public Token getNextIdentifier(String identifier) {
+        Integer suffix = 1;
+        String newIdentifier = identifier + "_" + suffix.toString();
+        while (ruleMap.containsKey(newIdentifier)) {
+            suffix += 1;
+            newIdentifier = identifier + "_" + suffix.toString();
+        }
+        return new Token(newIdentifier, TokenizerTypeList.defaultGrammarTTL().get(IDENTIFIER_NAME));
     }
 
 }
