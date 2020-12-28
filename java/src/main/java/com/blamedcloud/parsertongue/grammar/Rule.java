@@ -145,21 +145,6 @@ public class Rule {
         return currentTokenType().isSameAs(getTTByName(name));
     }
 
-    protected void checkSugar() {
-        rhsTree.checkSugar();
-    }
-
-    public boolean hasSugar() {
-        return rhsTree.hasSugar();
-    }
-
-    protected void deSugar(Grammar grammar) {
-        if (!hasSugar()) {
-            return;
-        }
-        rhsTree.deSugar(grammar, this);
-    }
-
     private void parseRule() {
         if (ruleTokens.size() < MIN_TOKEN_COUNT) {
             throw new RuntimeException("Rule has too few tokens");

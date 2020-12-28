@@ -32,11 +32,6 @@ public class RHSTree {
     private TokenType regexNode;
     private Rule link;
 
-
-    private boolean hasDirectSugar;
-    private boolean hasNestedSugar;
-    private boolean checkedSugar;
-
     public RHSTree(RHSType type) {
         levelType = type;
         levelKind = type.getKind();
@@ -44,10 +39,6 @@ public class RHSTree {
         node = null;
         regexNode = null;
         link = null;
-
-        hasDirectSugar = false;
-        hasNestedSugar = false;
-        checkedSugar = false;
     }
 
     public void addChild(RHSTree child) {
@@ -257,48 +248,4 @@ public class RHSTree {
         return new WalkResult(isInfinite, treeSize);
     }
 
-    protected void checkSugar() {
-        if (checkedSugar) {
-            return;
-        }
-        checkedSugar = true;
-
-        hasDirectSugar = false;
-        hasNestedSugar = false;
-
-        if (levelKind == RHSKind.SINGLE) {
-            hasDirectSugar = true;
-        }
-
-        if (levelKind == RHSKind.SINGLE || levelKind == RHSKind.LIST) {
-            for (RHSTree child : children) {
-                child.checkSugar();
-                if (child.hasSugar()) {
-                    hasNestedSugar = true;
-                }
-            }
-        }
-
-        if (levelType == RHSType.IDENTIFIER) {
-            link.checkSugar();
-            if (link.hasSugar()) {
-                hasNestedSugar = true;
-            }
-        }
-    }
-
-    public boolean hasSugar() {
-        if (!checkedSugar) {
-            checkSugar();
-        }
-        return hasDirectSugar || hasNestedSugar;
-    }
-
-    protected void deSugar(Grammar grammar, Rule parent) {
-        if (!hasSugar()) {
-            return;
-        }
-
-
-    }
 }

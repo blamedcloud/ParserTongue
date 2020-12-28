@@ -33,9 +33,6 @@ public class Grammar {
     private boolean linkageDone;
     private TokenizerTypeList additionalTokenTypes;
 
-    private boolean hasSugar;
-    private boolean checkedSugar;
-
     public static Builder newBuilder(File grammarFile) {
         return new Builder(grammarFile);
     }
@@ -84,9 +81,6 @@ public class Grammar {
         linkageDone = false;
         additionalTokenTypes = new TokenizerTypeList();
 
-        hasSugar = false;
-        checkedSugar = false;
-
         String fullText;
         try {
             fullText = Files.readString(builder.grammarFile.toPath());
@@ -134,8 +128,6 @@ public class Grammar {
         } else {
             setStart(builder.startSymbol);
         }
-
-        checkSugar();
     }
 
     public TokenizerTypeList getRegexTokenTypes() {
@@ -290,28 +282,6 @@ public class Grammar {
             n--;
         }
         return classification;
-    }
-
-    private void checkSugar() {
-        if (checkedSugar) {
-            return;
-        }
-        checkedSugar = true;
-
-        hasSugar = false;
-        for (Rule rule : rules) {
-            rule.checkSugar();
-            if (rule.hasSugar()) {
-                hasSugar = true;
-            }
-        }
-    }
-
-    public boolean hasSugar() {
-        if (!checkedSugar) {
-            checkSugar();
-        }
-        return hasSugar;
     }
 
     public Token getNextIdentifier(String identifier) {
