@@ -225,7 +225,11 @@ public class Grammar {
         }
     }
 
-    public String getStartRule() {
+    public Rule getStartRule() {
+        return startRule;
+    }
+
+    public String getStartRuleName() {
         return startRuleName;
     }
 

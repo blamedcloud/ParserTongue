@@ -1,6 +1,6 @@
 
 # test one of the following languages, prepend each with a number to differentiate them.
-start = '1' , test1 | '2' , test2 | '3' , test3 | '4' , test4 | '5' , test5 | '6' , test6;
+start = '1' , test1 | '2' , test2 | '3' , test3 | '4' , test4 | '5' , test5 | '6' , test6 | '7' , test7;
 
 # a^n b^n . classic example
 test1 = "a" , test1 , "b" | "" ;
@@ -23,3 +23,6 @@ test5 = [equal];
 
 # ba*c
 test6 = 'b', ({'a'}, 'c');
+
+# a regex test
+test7 = ~ 'b(ab?c*)*';

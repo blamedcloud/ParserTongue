@@ -112,11 +112,11 @@ public class SugarTransformer implements GrammarTransformer {
         }
 
         if (originalGrammar.hasDependencies()) {
-            newGrammar = new Grammar(newRules, originalGrammar.getStartRule(), true);
+            newGrammar = new Grammar(newRules, originalGrammar.getStartRuleName(), true);
             newGrammar.setExternalRuleMaps(originalGrammar.getExternalRuleMaps());
             newGrammar.linkRules();
         } else {
-            newGrammar = new Grammar(newRules, originalGrammar.getStartRule(), false);
+            newGrammar = new Grammar(newRules, originalGrammar.getStartRuleName(), false);
         }
     }
 
