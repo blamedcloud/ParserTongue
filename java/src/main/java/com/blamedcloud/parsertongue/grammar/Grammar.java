@@ -1,6 +1,8 @@
 package com.blamedcloud.parsertongue.grammar;
 
 import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.END_NAME;
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.IDENTIFIER_NAME;
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.TERMINAL_NAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,6 +17,8 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.blamedcloud.parsertongue.grammar.expecterator.ParseResultExpecterator;
+import com.blamedcloud.parsertongue.grammar.result.ParseResult;
+import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
 import com.blamedcloud.parsertongue.smallstrings.SmallestStringIterator;
 import com.blamedcloud.parsertongue.tokenizer.Token;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
@@ -28,9 +32,16 @@ public class Grammar {
     private Rule startRule;
     private Set<String> externalDependencyNames;
     private Map<String, Map<String, Rule>> externalRuleMaps;
-    private boolean deferLinkage;
     private boolean linkageDone;
     private TokenizerTypeList additionalTokenTypes;
+
+    public static Tokenizer newTokenizer() {
+        return new Tokenizer();
+    }
+
+    public static Token getEmptyStringToken() {
+        return new Token("", Grammar.newTokenizer().getTTL().get(TERMINAL_NAME), "''");
+    }
 
     public static Builder newBuilder(File grammarFile) {
         return new Builder(grammarFile);
@@ -71,15 +82,34 @@ public class Grammar {
     }
 
     private Grammar(Builder builder) {
+        initialSetup();
+        parseRules(builder);
+    }
+
+    public Grammar(List<Rule> rules, String startRuleName, boolean deferLinkage) {
+        initialSetup();
+        for (Rule rule : rules) {
+            addRule(rule);
+        }
+
+        if (!deferLinkage) {
+            linkRules();
+        }
+
+        setStart(startRuleName);
+    }
+
+    private void initialSetup() {
         rules = new ArrayList<>();
         ruleMap = new HashMap<>();
         startRuleName = null;
         externalDependencyNames = new HashSet<>();
         externalRuleMaps = new HashMap<>();
-        deferLinkage = builder.deferLinkage;
         linkageDone = false;
         additionalTokenTypes = new TokenizerTypeList();
+    }
 
+    private void parseRules(Builder builder) {
         String fullText;
         try {
             fullText = Files.readString(builder.grammarFile.toPath());
@@ -87,7 +117,7 @@ public class Grammar {
             throw new RuntimeException("Unable to read grammar file");
         }
 
-        Tokenizer fullTokenizer = new Tokenizer();
+        Tokenizer fullTokenizer = Grammar.newTokenizer();
         fullTokenizer.tokenize(fullText);
 
         Token splitToken = new Token(";", fullTokenizer.getTTL().get(END_NAME));
@@ -100,20 +130,10 @@ public class Grammar {
 
         for (Tokenizer tokens : ruleTokenizers) {
             Rule rule = new Rule(tokens);
-            if (rule.hasDependency()) {
-                String dependencyName = rule.getDependencyName();
-                if (!externalDependencyNames.contains(dependencyName)) {
-                    externalDependencyNames.add(dependencyName);
-                }
-            }
-            if (rule.isRegexRule()) {
-                additionalTokenTypes.add(rule.getRegexTokenType());
-            }
-            rules.add(rule);
-            ruleMap.put(rule.lhs().getValue(), rule);
+            addRule(rule);
         }
 
-        if (!deferLinkage) {
+        if (!builder.deferLinkage) {
             linkRules();
         }
 
@@ -127,6 +147,20 @@ public class Grammar {
         } else {
             setStart(builder.startSymbol);
         }
+    }
+
+    private void addRule(Rule rule) {
+        if (rule.hasDependency()) {
+            String dependencyName = rule.getDependencyName();
+            if (!externalDependencyNames.contains(dependencyName)) {
+                externalDependencyNames.add(dependencyName);
+            }
+        }
+        if (rule.isRegexRule()) {
+            additionalTokenTypes.add(rule.getRegexTokenType());
+        }
+        rules.add(rule);
+        ruleMap.put(rule.lhs().getValue(), rule);
     }
 
     public TokenizerTypeList getRegexTokenTypes() {
@@ -191,7 +225,11 @@ public class Grammar {
         }
     }
 
-    public String getStartRule() {
+    public Rule getStartRule() {
+        return startRule;
+    }
+
+    public String getStartRuleName() {
         return startRuleName;
     }
 
@@ -281,6 +319,16 @@ public class Grammar {
             n--;
         }
         return classification;
+    }
+
+    public static Token getNextIdentifier(String identifier, Set<String> registeredIdentifiers) {
+        Integer suffix = 1;
+        String newIdentifier = identifier + "_" + suffix.toString();
+        while (registeredIdentifiers.contains(newIdentifier)) {
+            suffix += 1;
+            newIdentifier = identifier + "_" + suffix.toString();
+        }
+        return new Token(newIdentifier, TokenizerTypeList.defaultGrammarTTL().get(IDENTIFIER_NAME));
     }
 
 }

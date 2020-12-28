@@ -51,6 +51,18 @@ public class Tokenizer {
         tokens = tokenList;
     }
 
+    public boolean hasSameTokens(Tokenizer other) {
+        if (tokens.size() != other.tokens.size()) {
+            return false;
+        }
+        for (int i = 0; i < tokens.size(); i++) {
+            if (!tokens.get(i).isSameAs(other.tokens.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public int size() {
         return tokens.size();
     }

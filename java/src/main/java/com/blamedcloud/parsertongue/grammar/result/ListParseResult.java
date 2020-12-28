@@ -1,4 +1,4 @@
-package com.blamedcloud.parsertongue.grammar;
+package com.blamedcloud.parsertongue.grammar.result;
 
 import java.util.ArrayList;
 import java.util.List;

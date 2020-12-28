@@ -14,11 +14,13 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.blamedcloud.parsertongue.grammar.Grammar;
+
 public class GrammarTTLTest {
 
     @Test
     public void TestControl() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType controlType = tokenizer.getTTL().get(CONTROL_NAME);
 
         String input = "[[(|,}){]";
@@ -34,7 +36,7 @@ public class GrammarTTLTest {
 
     @Test
     public void TestIdentifier() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType identifierType = tokenizer.getTTL().get(IDENTIFIER_NAME);
 
         String input = "identifier,Id_2_special anotherOne";
@@ -63,7 +65,7 @@ public class GrammarTTLTest {
 
     @Test
     public void TestTerminal() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType terminalType = tokenizer.getTTL().get(TERMINAL_NAME);
 
         String input = "'simple' \n \t 'single \"quoted\" string' \"double quoted string with 'single quotes'\"";
@@ -88,7 +90,7 @@ public class GrammarTTLTest {
 
     @Test
     public void TestComment() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType commentType = tokenizer.getTTL().get(COMMENT_NAME);
 
         String input = "stuff = 'a' | { 'b' # comment\n } ;#another comment";
@@ -105,7 +107,7 @@ public class GrammarTTLTest {
 
     @Test
     public void TestOthers() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType endType = tokenizer.getTTL().get(END_NAME);
         TokenType defineType = tokenizer.getTTL().get(DEFINE_NAME);
         TokenType externalType = tokenizer.getTTL().get(EXTERNAL_NAME);

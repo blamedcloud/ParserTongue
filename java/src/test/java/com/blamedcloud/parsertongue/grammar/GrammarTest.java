@@ -154,4 +154,5 @@ public class GrammarTest {
     private Grammar getGrammar(String path) throws Exception {
         return Grammar.newBuilder(new File(path)).build();
     }
+
 }

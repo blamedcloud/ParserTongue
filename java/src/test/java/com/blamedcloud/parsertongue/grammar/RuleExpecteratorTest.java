@@ -13,11 +13,11 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.blamedcloud.parsertongue.grammar.expecterator.ParseResultExpecterator;
+import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
 
 public class RuleExpecteratorTest {
-
 
     @Test
     public void simpleTerminalTest() {
@@ -216,7 +216,7 @@ public class RuleExpecteratorTest {
     }
 
     private Rule createRule(String ruleInput) {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         tokenizer.tokenize(ruleInput);
         Rule rule = new Rule(tokenizer);
         return rule;

@@ -42,6 +42,10 @@ public class TokenType {
         return typePattern;
     }
 
+    public String getExpression() {
+        return typeExpression;
+    }
+
     // technically two different patterns could yield the same regular language
     // but we choose not to care about that case.
     public boolean isSameAs(TokenType other) {

@@ -21,7 +21,7 @@ public class RuleTest {
 
     @Test
     public void externalRuleTest() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType identifierType = tokenizer.getTTL().get(IDENTIFIER_NAME);
 
         String ruleInput = "this = otherGrammar : that";
@@ -47,7 +47,7 @@ public class RuleTest {
 
     @Test
     public void regexRuleTest() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType identifierType = tokenizer.getTTL().get(IDENTIFIER_NAME);
 
         TokenType regexType = new TokenType("aManyB", "ab+");
@@ -73,7 +73,7 @@ public class RuleTest {
 
     @Test
     public void optionalRuleTest() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType identifierType = tokenizer.getTTL().get(IDENTIFIER_NAME);
         TokenType terminalType = tokenizer.getTTL().get(TERMINAL_NAME);
 
@@ -104,7 +104,7 @@ public class RuleTest {
 
     @Test
     public void repeatRuleTest() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType identifierType = tokenizer.getTTL().get(IDENTIFIER_NAME);
         TokenType terminalType = tokenizer.getTTL().get(TERMINAL_NAME);
 
@@ -135,7 +135,7 @@ public class RuleTest {
 
     @Test
     public void groupRuleTest() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType identifierType = tokenizer.getTTL().get(IDENTIFIER_NAME);
         TokenType terminalType = tokenizer.getTTL().get(TERMINAL_NAME);
 
@@ -166,7 +166,7 @@ public class RuleTest {
 
     @Test
     public void alternationRuleTest() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType identifierType = tokenizer.getTTL().get(IDENTIFIER_NAME);
         TokenType terminalType = tokenizer.getTTL().get(TERMINAL_NAME);
 
@@ -213,7 +213,7 @@ public class RuleTest {
 
     @Test
     public void concatenationRuleTest() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType identifierType = tokenizer.getTTL().get(IDENTIFIER_NAME);
         TokenType terminalType = tokenizer.getTTL().get(TERMINAL_NAME);
 
@@ -267,7 +267,7 @@ public class RuleTest {
 
     @Test
     public void complexRuleTest() {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType identifierType = tokenizer.getTTL().get(IDENTIFIER_NAME);
         TokenType terminalType = tokenizer.getTTL().get(TERMINAL_NAME);
 

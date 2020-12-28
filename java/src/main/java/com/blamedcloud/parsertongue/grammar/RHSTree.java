@@ -21,11 +21,15 @@ import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 
 public class RHSTree {
 
+    // all RHSTree's have a kind and a type
+    private RHSKind levelKind;
     private RHSType levelType;
+
+    // which of these are valid depends on
+    // the levelKind and levelType of this tree.
     private List<RHSTree> children;
     private Token node;
     private TokenType regexNode;
-    private RHSKind levelKind;
     private Rule link;
 
     public RHSTree(RHSType type) {
@@ -128,6 +132,10 @@ public class RHSTree {
 
     public RHSTree getChild(int index) {
         return children.get(index);
+    }
+
+    public List<RHSTree> getChildren() {
+        return children;
     }
 
     public Token getNode() {
@@ -242,6 +250,27 @@ public class RHSTree {
             }
         }
         return new WalkResult(isInfinite, treeSize);
+    }
+
+    // note that the copy returned will not be linked.
+    public RHSTree copy() {
+        RHSTree newTree = new RHSTree(levelType);
+
+        if (levelKind == RHSKind.LIST || levelKind == RHSKind.SINGLE) {
+            for (RHSTree child : children) {
+                newTree.addChild(child.copy());
+            }
+        }
+
+        if (levelKind == RHSKind.LEAF) {
+            if (levelType == RHSType.REGEX) {
+                newTree.createRegexNode(regexNode);
+            } else {
+                newTree.createNode(node);
+            }
+        }
+
+        return newTree;
     }
 
 }
