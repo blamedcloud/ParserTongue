@@ -45,16 +45,103 @@ public class Rule {
     private static final int EXTERNAL_RULE_SIZE = 5;
     private static final int REGEX_RULE_SIZE = 4;
 
+    private static final Function<ParseResult, ParseResult> DEFAULT_TRANSFORMER = ParseResultTransformer::identity;
+
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private Token lhsToken;
+        private RHSTree rhsTree;
+        private Function<ParseResult, ParseResult> transformer;
+        private boolean external;
+        private String externalName;
+        private boolean regex;
+        private TokenType regexTokenType;
+
+        public Builder() {
+            lhsToken = null;
+            rhsTree = null;
+            transformer = DEFAULT_TRANSFORMER;
+            external = false;
+            externalName = null;
+            regex = false;
+            regexTokenType = null;
+        }
+
+        public Builder setLHSToken(Token lhs) {
+            this.lhsToken = lhs;
+            return this;
+        }
+
+        public Builder setRHSTree(RHSTree tree) {
+            this.rhsTree = tree;
+            return this;
+        }
+
+        public Builder setTransformer(Function<ParseResult, ParseResult> transformer) {
+            this.transformer = transformer;
+            return this;
+        }
+
+        public Builder setExternalName(String externalName) {
+            this.externalName = externalName;
+            this.external = true;
+            return this;
+        }
+
+        public Builder setRegexTokenType(TokenType regexTT) {
+            this.regexTokenType = regexTT;
+            this.regex = true;
+            return this;
+        }
+
+        public Rule build() {
+            if (this.lhsToken == null || this.rhsTree == null) {
+                throw new RuntimeException("Can't create rule without lhs or rhs!");
+            }
+            return new Rule(this);
+        }
+
+    }
+
+    private Rule(Builder builder) {
+        lhsToken = builder.lhsToken;
+        rhsTree = builder.rhsTree;
+        ruleTokens = Grammar.newTokenizer();
+        transformer = builder.transformer;
+        external = builder.external;
+        externalName = builder.externalName;
+        regex = builder.regex;
+        regexTokenType = builder.regexTokenType;
+    }
+
     public Rule(Tokenizer tokens) {
         lhsToken = null;
         rhsTree = null;
         ruleTokens = tokens;
-        transformer = ParseResultTransformer::identity;
+        transformer = DEFAULT_TRANSFORMER;
         external = false;
         externalName = null;
         regex = false;
         regexTokenType = null;
         parseRule();
+    }
+
+    public Rule copy() {
+        Rule.Builder builder = Rule.newBuilder()
+                                   .setLHSToken(lhsToken.copy())
+                                   .setRHSTree(rhsTree.copy())
+                                   .setTransformer(transformer);
+        if (external) {
+            builder.setExternalName(externalName);
+        }
+        if (regex) {
+            builder.setRegexTokenType(regexTokenType);
+        }
+        return builder.build();
     }
 
     public void setTransformer(Function<ParseResult, ParseResult> f) {

@@ -216,7 +216,7 @@ public class RuleExpecteratorTest {
     }
 
     private Rule createRule(String ruleInput) {
-        Tokenizer tokenizer = new Tokenizer();
+        Tokenizer tokenizer = Grammar.newTokenizer();
         tokenizer.tokenize(ruleInput);
         Rule rule = new Rule(tokenizer);
         return rule;
