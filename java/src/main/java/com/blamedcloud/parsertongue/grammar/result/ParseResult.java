@@ -1,4 +1,4 @@
-package com.blamedcloud.parsertongue.grammar;
+package com.blamedcloud.parsertongue.grammar.result;
 
 public interface ParseResult {
 

@@ -1,6 +1,6 @@
 package com.blamedcloud.parsertongue.grammar.expecterator;
 
-import com.blamedcloud.parsertongue.grammar.ParseResultTransformer;
+import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 
 public abstract class ParseResultExpecterator implements Expecterator<ParseResultTransformer> {

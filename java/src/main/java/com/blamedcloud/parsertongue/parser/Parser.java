@@ -10,9 +10,9 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.blamedcloud.parsertongue.grammar.Grammar;
-import com.blamedcloud.parsertongue.grammar.ParseResult;
-import com.blamedcloud.parsertongue.grammar.ParseResultTransformer;
 import com.blamedcloud.parsertongue.grammar.dependencies.DependencyManager;
+import com.blamedcloud.parsertongue.grammar.result.ParseResult;
+import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
 

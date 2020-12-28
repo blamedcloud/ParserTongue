@@ -17,6 +17,8 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.blamedcloud.parsertongue.grammar.expecterator.ParseResultExpecterator;
+import com.blamedcloud.parsertongue.grammar.result.ParseResult;
+import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
 import com.blamedcloud.parsertongue.smallstrings.SmallestStringIterator;
 import com.blamedcloud.parsertongue.tokenizer.Token;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;

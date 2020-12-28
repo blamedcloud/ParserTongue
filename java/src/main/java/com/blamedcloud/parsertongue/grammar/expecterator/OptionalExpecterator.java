@@ -2,9 +2,9 @@ package com.blamedcloud.parsertongue.grammar.expecterator;
 
 import java.util.Optional;
 
-import com.blamedcloud.parsertongue.grammar.ParseResultTransformer;
 import com.blamedcloud.parsertongue.grammar.RHSTree;
-import com.blamedcloud.parsertongue.grammar.StringParseResult;
+import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
+import com.blamedcloud.parsertongue.grammar.result.StringParseResult;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 
 public class OptionalExpecterator extends ParseResultExpecterator {
