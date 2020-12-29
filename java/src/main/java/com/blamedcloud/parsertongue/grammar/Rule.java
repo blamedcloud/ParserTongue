@@ -43,9 +43,6 @@ public class Rule {
     private boolean regex;
     private TokenType regexTokenType;
 
-    private boolean isDirectlyLeftRecursive;
-    private boolean isIndirectlyLeftRecursive;
-
     private static final int MIN_TOKEN_COUNT = 3;
     private static final int EXTERNAL_RULE_SIZE = 5;
     private static final int REGEX_RULE_SIZE = 4;
@@ -132,8 +129,6 @@ public class Rule {
         externalName = null;
         regex = false;
         regexTokenType = null;
-        isDirectlyLeftRecursive = false;
-        isIndirectlyLeftRecursive = false;
         parseRule();
     }
 
@@ -149,39 +144,6 @@ public class Rule {
             builder.setRegexTokenType(regexTokenType);
         }
         return builder.build();
-    }
-
-    protected Set<String> getDirectLeftCornerIdentifiers() {
-        Set<String> dlcIdentifiers = new HashSet<>();
-        // external rules could be thought of as direct
-        // left corners, but they cannot contribute to
-        // left recursion because cyclic grammar
-        // dependencies are not allowed, so we don't
-        // include them here.
-        if (!regex && !external) {
-            dlcIdentifiers = rhsTree.getDirectLeftCornerIdentifiers();
-        }
-        return dlcIdentifiers;
-    }
-
-    protected void setDirectLeftRecursion(boolean dlr) {
-        isDirectlyLeftRecursive = dlr;
-    }
-
-    protected void setIndirectLeftRecursion(boolean idlr) {
-        isIndirectlyLeftRecursive = idlr;
-    }
-
-    public boolean hasDirectLeftRecursion() {
-        return isDirectlyLeftRecursive;
-    }
-
-    public boolean hasIndirectLeftRecursion() {
-        return isIndirectlyLeftRecursive;
-    }
-
-    public boolean hasLeftRecursion() {
-        return isDirectlyLeftRecursive || isIndirectlyLeftRecursive;
     }
 
     public void setTransformer(ParseResultFunction f) {

@@ -8,7 +8,7 @@ public interface GrammarTransformer {
 
     public Grammar getOriginalGrammar();
 
-    public boolean containsAffectedRules();
+    public boolean isGrammarAffected();
 
     public boolean isRuleAffected(Rule rule);
 

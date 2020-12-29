@@ -7,46 +7,56 @@ import java.io.File;
 
 import org.junit.Test;
 
+import com.blamedcloud.parsertongue.grammar.transformer.LeftRecursionTransformer;
+
 public class LeftRecursiveTest {
 
     @Test
     public void testSimpleDirect() throws Exception {
         Grammar grammar = getGrammar("src/test/resources/leftRecursive/simpleDirect.ebnf");
-        assertTrue(grammar.containsLeftRecursion());
+        LeftRecursionTransformer lrTransformer = new LeftRecursionTransformer(grammar);
+        assertTrue(lrTransformer.isGrammarAffected());
 
         Rule startRule = grammar.getStartRule();
-        assertTrue(startRule.hasDirectLeftRecursion());
-        assertFalse(startRule.hasIndirectLeftRecursion());
+        assertTrue(lrTransformer.isRuleAffected(startRule));
+        assertTrue(lrTransformer.hasDirectLR(startRule));
+        assertFalse(lrTransformer.hasIndirectLR(startRule));
     }
 
     @Test
     public void testComplexDirect() throws Exception {
         Grammar grammar = getGrammar("src/test/resources/leftRecursive/complexDirect.ebnf");
-        assertTrue(grammar.containsLeftRecursion());
+        LeftRecursionTransformer lrTransformer = new LeftRecursionTransformer(grammar);
+        assertTrue(lrTransformer.isGrammarAffected());
 
         Rule startRule = grammar.getStartRule();
-        assertTrue(startRule.hasDirectLeftRecursion());
-        assertFalse(startRule.hasIndirectLeftRecursion());
+        assertTrue(lrTransformer.isRuleAffected(startRule));
+        assertTrue(lrTransformer.hasDirectLR(startRule));
+        assertFalse(lrTransformer.hasIndirectLR(startRule));
     }
 
     @Test
     public void testsimpleIndirect() throws Exception {
         Grammar grammar = getGrammar("src/test/resources/leftRecursive/simpleIndirect.ebnf");
-        assertTrue(grammar.containsLeftRecursion());
+        LeftRecursionTransformer lrTransformer = new LeftRecursionTransformer(grammar);
+        assertTrue(lrTransformer.isGrammarAffected());
 
         Rule startRule = grammar.getStartRule();
-        assertFalse(startRule.hasDirectLeftRecursion());
-        assertTrue(startRule.hasIndirectLeftRecursion());
+        assertTrue(lrTransformer.isRuleAffected(startRule));
+        assertFalse(lrTransformer.hasDirectLR(startRule));
+        assertTrue(lrTransformer.hasIndirectLR(startRule));
     }
 
     @Test
     public void testComplexIndirect() throws Exception {
         Grammar grammar = getGrammar("src/test/resources/leftRecursive/complexIndirect.ebnf");
-        assertTrue(grammar.containsLeftRecursion());
+        LeftRecursionTransformer lrTransformer = new LeftRecursionTransformer(grammar);
+        assertTrue(lrTransformer.isGrammarAffected());
 
         Rule startRule = grammar.getStartRule();
-        assertFalse(startRule.hasDirectLeftRecursion());
-        assertTrue(startRule.hasIndirectLeftRecursion());
+        assertTrue(lrTransformer.isRuleAffected(startRule));
+        assertFalse(lrTransformer.hasDirectLR(startRule));
+        assertTrue(lrTransformer.hasIndirectLR(startRule));
     }
 
     private Grammar getGrammar(String path) throws Exception {

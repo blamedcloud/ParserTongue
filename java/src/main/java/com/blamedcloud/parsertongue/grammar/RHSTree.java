@@ -41,22 +41,6 @@ public class RHSTree {
         link = null;
     }
 
-    protected Set<String> getDirectLeftCornerIdentifiers() {
-        Set<String> dlcIdentifiers = new HashSet<>();
-
-        if (levelKind == RHSKind.SINGLE || levelType == RHSType.CONCATENATION) {
-            dlcIdentifiers = children.get(0).getDirectLeftCornerIdentifiers();
-        } else if (levelType == RHSType.IDENTIFIER) {
-            dlcIdentifiers.add(node.getValue());
-        } else if (levelType == RHSType.ALTERNATION) {
-            for (RHSTree child : children) {
-                dlcIdentifiers.addAll(child.getDirectLeftCornerIdentifiers());
-            }
-        }
-
-        return dlcIdentifiers;
-    }
-
     public void addChild(RHSTree child) {
         if (levelKind == RHSKind.LEAF) {
             throw new RuntimeException("Can't add child to LEAF kind RHSTree of Type: " + levelType);
