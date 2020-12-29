@@ -225,7 +225,7 @@ public class SugarTransformer implements GrammarTransformer {
     }
 
     @Override
-    public boolean containsAffectedRules() {
+    public boolean isGrammarAffected() {
         return grammarHasSugar;
     }
 

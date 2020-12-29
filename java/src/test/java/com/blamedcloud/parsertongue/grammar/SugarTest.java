@@ -19,18 +19,18 @@ public class SugarTest {
     public void testGrammarNoSugar() throws Exception {
         Grammar grammar = getGrammar("src/test/resources/aToN.ebnf");
         SugarTransformer sugar = new SugarTransformer(grammar);
-        assertFalse(sugar.containsAffectedRules());
+        assertFalse(sugar.isGrammarAffected());
     }
 
     @Test
     public void testGrammarSugar() throws Exception {
         Grammar grammar = getGrammar("src/test/resources/b_aStar_c.ebnf");
         SugarTransformer sugar = new SugarTransformer(grammar);
-        assertTrue(sugar.containsAffectedRules());
+        assertTrue(sugar.isGrammarAffected());
 
         Grammar newGrammar = sugar.getTransformedGrammar();
         SugarTransformer newSugar = new SugarTransformer(newGrammar);
-        assertFalse(newSugar.containsAffectedRules());
+        assertFalse(newSugar.isGrammarAffected());
 
         compareGrammars(grammar, newGrammar);
     }
@@ -39,11 +39,11 @@ public class SugarTest {
     public void testComplexGrammarSugar() throws Exception {
         Grammar grammar = getGrammar("src/test/resources/testAllInternal.ebnf");
         SugarTransformer sugar = new SugarTransformer(grammar);
-        assertTrue(sugar.containsAffectedRules());
+        assertTrue(sugar.isGrammarAffected());
 
         Grammar newGrammar = sugar.getTransformedGrammar();
         SugarTransformer newSugar = new SugarTransformer(newGrammar);
-        assertFalse(newSugar.containsAffectedRules());
+        assertFalse(newSugar.isGrammarAffected());
 
         compareGrammars(grammar, newGrammar);
     }
