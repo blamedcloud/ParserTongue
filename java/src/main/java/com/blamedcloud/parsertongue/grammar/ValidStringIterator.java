@@ -7,6 +7,7 @@ import com.blamedcloud.parsertongue.smallstrings.SmallestStringIterator;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerException;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
+import com.blamedcloud.parsertongue.utility.FixedPair;
 
 // This is a naive iterator that tries each possible string in
 // A* (Kleene star) until it finds the next string in the language
@@ -56,7 +57,7 @@ public class ValidStringIterator implements Iterator<String> {
         if (!grammar.hasLinked()) {
             throw new RuntimeException("Cannot walk without linking");
         }
-        WalkResult walkResult = grammar.walk();
+        FixedPair<Boolean, Integer> walkResult = grammar.walk();
         numIterations = 0;
         Set<String> alphabet = grammar.getAlphabet();
         if (!alphabet.contains("")) {
@@ -71,13 +72,13 @@ public class ValidStringIterator implements Iterator<String> {
         }
         emptyStringValid = grammar.isInLanguage(emptyTokenizer);
         alphabet.remove("");
-        if (maxIterations == null && !walkResult.isInfinite) {
+        if (maxIterations == null && !walkResult.left) {
             // in the case of a finite language, we use an upperbound
             // of |A|^num(terminals) where |A| is the size of the alphabet
             // and num(terminals) is (kind of) the number of terminals
             // in the grammar file. This should be an upper bound, but
             // a very bad one in most cases
-            maxIterations = ((int) Math.pow(alphabet.size(), walkResult.treeSize)) + 1;
+            maxIterations = ((int) Math.pow(alphabet.size(), walkResult.right)) + 1;
         }
         stringIterator = new SmallestStringIterator(alphabet);
         TokenizerTypeList ttl = TokenizerTypeList.getTTLForTerminals(alphabet);

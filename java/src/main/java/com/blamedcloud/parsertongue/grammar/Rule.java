@@ -31,6 +31,7 @@ import com.blamedcloud.parsertongue.tokenizer.Token;
 import com.blamedcloud.parsertongue.tokenizer.TokenType;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
+import com.blamedcloud.parsertongue.utility.FixedPair;
 
 public class Rule {
 
@@ -174,11 +175,11 @@ public class Rule {
         return new RuleExpecterator(this, tokens);
     }
 
-    public WalkResult walk() {
+    public FixedPair<Boolean, Integer> walk() {
         return walk(new HashSet<>());
     }
 
-    public WalkResult walk(Set<String> previousIdentifiers) {
+    public FixedPair<Boolean, Integer> walk(Set<String> previousIdentifiers) {
         if ((previousIdentifiers.size() > 0) && (previousIdentifiers.contains(lhsToken.getValue()))) {
             // if there is a recursive loop of identifiers,
             // we assume the language generated is infinite
@@ -186,7 +187,7 @@ public class Rule {
             // be fine for non-pathalogical examples.
             // For example, it probably runs forever on a
             // left-recursive rule (which we can't parse anyway)
-            return new WalkResult(true, -1);
+            return new FixedPair<>(true, -1);
         } else {
             previousIdentifiers.add(lhsToken.getValue());
             return rhsTree.walkTree(previousIdentifiers);

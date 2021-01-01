@@ -23,6 +23,7 @@ import com.blamedcloud.parsertongue.tokenizer.Token;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerException;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
+import com.blamedcloud.parsertongue.utility.FixedPair;
 
 public class Grammar {
 
@@ -241,7 +242,12 @@ public class Grammar {
         return tryParse(tokens).isValid();
     }
 
-    public WalkResult walk() {
+    // the result of walk() is a pair
+    // (isInfinite, treeSize) where left
+    // is true iff the language is infinite,
+    // and right is an upper-bound on the
+    // language size if it is not infinite.
+    public FixedPair<Boolean, Integer> walk() {
         return startRule.walk();
     }
 
