@@ -18,6 +18,7 @@ import com.blamedcloud.parsertongue.grammar.expecterator.TerminalExpecterator;
 import com.blamedcloud.parsertongue.tokenizer.Token;
 import com.blamedcloud.parsertongue.tokenizer.TokenType;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
+import com.blamedcloud.parsertongue.utility.FixedPair;
 
 public class RHSTree {
 
@@ -204,7 +205,7 @@ public class RHSTree {
         throw new RuntimeException("unknown level type");
     }
 
-    public WalkResult walkTree(Set<String> previousIdentifiers) {
+    public FixedPair<Boolean, Integer> walkTree(Set<String> previousIdentifiers) {
         boolean isInfinite = false;
         int treeSize = 0;
 
@@ -221,35 +222,35 @@ public class RHSTree {
         } else if (levelType == RHSType.OPTIONAL) {
             return children.get(0).walkTree(previousIdentifiers);
         } else if (levelType == RHSType.REPEAT) {
-            WalkResult result = children.get(0).walkTree(previousIdentifiers);
-            if ((result.isInfinite) || (result.treeSize >= 1)) {
+            FixedPair<Boolean, Integer> result = children.get(0).walkTree(previousIdentifiers);
+            if ((result.left) || (result.right >= 1)) {
                 isInfinite = true;
                 treeSize = -1;
             }
         } else if (levelType == RHSType.CONCATENATION) {
             for (RHSTree child : children) {
-                WalkResult childResult = child.walkTree(previousIdentifiers);
-                if (childResult.isInfinite) {
+                FixedPair<Boolean, Integer> childResult = child.walkTree(previousIdentifiers);
+                if (childResult.left) {
                     isInfinite = true;
                     treeSize = -1;
                     break;
                 } else {
-                    treeSize += childResult.treeSize;
+                    treeSize += childResult.right;
                 }
             }
         } else if (levelType == RHSType.ALTERNATION) {
             for (RHSTree child : children) {
-                WalkResult childResult = child.walkTree(previousIdentifiers);
-                if (childResult.isInfinite) {
+                FixedPair<Boolean, Integer> childResult = child.walkTree(previousIdentifiers);
+                if (childResult.left) {
                     isInfinite = true;
                     treeSize = -1;
                     break;
-                } else if (childResult.treeSize > treeSize) {
-                    treeSize = childResult.treeSize;
+                } else if (childResult.right > treeSize) {
+                    treeSize = childResult.right;
                 }
             }
         }
-        return new WalkResult(isInfinite, treeSize);
+        return new FixedPair<>(isInfinite, treeSize);
     }
 
     // note that the copy returned will not be linked.
