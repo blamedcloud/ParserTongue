@@ -20,6 +20,7 @@ import com.blamedcloud.parsertongue.grammar.result.ParseResultFunction;
 import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
 import com.blamedcloud.parsertongue.smallstrings.SmallestStringIterator;
 import com.blamedcloud.parsertongue.tokenizer.Token;
+import com.blamedcloud.parsertongue.tokenizer.TokenType;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerException;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
@@ -42,6 +43,15 @@ public class Grammar {
 
     public static Token getEmptyStringToken() {
         return new Token("", Grammar.newTokenizer().getTTL().get(TERMINAL_NAME), "''");
+    }
+
+    public static Token getTerminalToken(String terminal) {
+        TokenType terminalType = Grammar.newTokenizer().getTTL().get(TERMINAL_NAME);
+        if (terminal.indexOf('"') != -1) {
+            return new Token(terminal, terminalType, "'" + terminal + "'");
+        } else {
+            return new Token(terminal, terminalType, '"' + terminal + '"');
+        }
     }
 
     public static Builder newBuilder(File grammarFile) {
@@ -211,6 +221,10 @@ public class Grammar {
 
     public Map<String, Rule> getRuleMap() {
         return ruleMap;
+    }
+
+    public boolean isRuleName(String name) {
+        return ruleMap.containsKey(name);
     }
 
     public void setRuleTransformer(String ruleName, ParseResultFunction f) {

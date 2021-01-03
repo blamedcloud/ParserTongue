@@ -24,7 +24,7 @@ public class SugarTransformer implements GrammarTransformer {
     private Map<RHSTree, Boolean> rhsNestedSugar;
 
     private Grammar newGrammar;
-    private Set<String> ruleNames;
+    private Set<String> newRuleNames;
     private List<Rule> newRules;
 
     private static final String GROUP_SUFFIX = "_grp";
@@ -38,7 +38,7 @@ public class SugarTransformer implements GrammarTransformer {
         rhsNestedSugar = new HashMap<>();
 
         newGrammar = null;
-        ruleNames = null;
+        newRuleNames = null;
         newRules = null;
 
         createSugarMaps();
@@ -99,8 +99,8 @@ public class SugarTransformer implements GrammarTransformer {
     }
 
     private void createNewGrammar() {
-        ruleNames = new HashSet<>();
-        ruleNames.addAll(originalGrammar.getRuleMap().keySet());
+        newRuleNames = new HashSet<>();
+        newRuleNames.addAll(originalGrammar.getRuleMap().keySet());
         newRules = new ArrayList<>();
 
         for (Rule oldRule : originalGrammar.getRules()) {
@@ -157,8 +157,8 @@ public class SugarTransformer implements GrammarTransformer {
         Rule newRule;
         if (tree.getType() == RHSType.GROUP) {
             String identifier = parent.lhs().getValue() + GROUP_SUFFIX;
-            ruleLHS = Grammar.getNextIdentifier(identifier, ruleNames);
-            ruleNames.add(ruleLHS.getValue());
+            ruleLHS = Grammar.getNextIdentifier(identifier, newRuleNames);
+            newRuleNames.add(ruleLHS.getValue());
 
             newRule = Rule.newBuilder()
                                .setLHSToken(ruleLHS)
@@ -166,8 +166,8 @@ public class SugarTransformer implements GrammarTransformer {
                                .build();
         } else if (tree.getType() == RHSType.OPTIONAL) {
             String identifier = parent.lhs().getValue() + OPTIONAL_SUFFIX;
-            ruleLHS = Grammar.getNextIdentifier(identifier, ruleNames);
-            ruleNames.add(ruleLHS.getValue());
+            ruleLHS = Grammar.getNextIdentifier(identifier, newRuleNames);
+            newRuleNames.add(ruleLHS.getValue());
 
             RHSTree newTree = new RHSTree(RHSType.ALTERNATION);
 
@@ -183,8 +183,8 @@ public class SugarTransformer implements GrammarTransformer {
                           .build();
         } else { // tree.getType() == RHSType.REPEAT
             String identifier = parent.lhs().getValue() + REPEAT_SUFFIX;
-            ruleLHS = Grammar.getNextIdentifier(identifier, ruleNames);
-            ruleNames.add(ruleLHS.getValue());
+            ruleLHS = Grammar.getNextIdentifier(identifier, newRuleNames);
+            newRuleNames.add(ruleLHS.getValue());
 
             RHSTree newTree = new RHSTree(RHSType.ALTERNATION);
 
