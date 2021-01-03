@@ -8,6 +8,8 @@ import java.io.File;
 import org.junit.Test;
 
 import com.blamedcloud.parsertongue.grammar.transformer.LeftRecursionTransformer;
+import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
+import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
 
 public class LeftRecursiveTest {
 
@@ -21,6 +23,17 @@ public class LeftRecursiveTest {
         assertTrue(lrTransformer.isRuleAffected(startRule));
         assertTrue(lrTransformer.hasDirectLR(startRule));
         assertFalse(lrTransformer.hasIndirectLR(startRule));
+
+        Grammar newGrammar = lrTransformer.getTransformedGrammar();
+        LeftRecursionTransformer newLrTransformer = new LeftRecursionTransformer(newGrammar);
+        assertFalse(newLrTransformer.isGrammarAffected());
+
+        TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("a");
+
+        assertFalse(isInLanguage(newGrammar, "", ttl));
+        assertTrue( isInLanguage(newGrammar, "a", ttl));
+        assertTrue( isInLanguage(newGrammar, "aa", ttl));
+        assertTrue( isInLanguage(newGrammar, "aaa", ttl));
     }
 
     @Test
@@ -33,6 +46,22 @@ public class LeftRecursiveTest {
         assertTrue(lrTransformer.isRuleAffected(startRule));
         assertTrue(lrTransformer.hasDirectLR(startRule));
         assertFalse(lrTransformer.hasIndirectLR(startRule));
+
+        Grammar newGrammar = lrTransformer.getTransformedGrammar();
+        LeftRecursionTransformer newLrTransformer = new LeftRecursionTransformer(newGrammar);
+        assertFalse(newLrTransformer.isGrammarAffected());
+
+        TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("123abc");
+
+        assertFalse(isInLanguage(newGrammar, "", ttl));
+        assertFalse(isInLanguage(newGrammar, "cc", ttl));
+        assertTrue( isInLanguage(newGrammar, "ac", ttl));
+        assertTrue( isInLanguage(newGrammar, "bc", ttl));
+        assertTrue( isInLanguage(newGrammar, "3c", ttl));
+        assertTrue( isInLanguage(newGrammar, "12c", ttl));
+
+        assertTrue( isInLanguage(newGrammar, "acc", ttl));
+        assertTrue( isInLanguage(newGrammar, "bccc", ttl));
     }
 
     @Test
@@ -45,6 +74,19 @@ public class LeftRecursiveTest {
         assertTrue(lrTransformer.isRuleAffected(startRule));
         assertFalse(lrTransformer.hasDirectLR(startRule));
         assertTrue(lrTransformer.hasIndirectLR(startRule));
+
+        Grammar newGrammar = lrTransformer.getTransformedGrammar();
+        LeftRecursionTransformer newLrTransformer = new LeftRecursionTransformer(newGrammar);
+        assertFalse(newLrTransformer.isGrammarAffected());
+
+        TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("a");
+
+        assertFalse(isInLanguage(newGrammar, "", ttl));
+        assertTrue( isInLanguage(newGrammar, "a", ttl));
+        assertFalse(isInLanguage(newGrammar, "aa", ttl));
+        assertTrue( isInLanguage(newGrammar, "aaa", ttl));
+        assertFalse(isInLanguage(newGrammar, "aaaa", ttl));
+        assertTrue( isInLanguage(newGrammar, "aaaaa", ttl));
     }
 
     @Test
@@ -57,6 +99,28 @@ public class LeftRecursiveTest {
         assertTrue(lrTransformer.isRuleAffected(startRule));
         assertFalse(lrTransformer.hasDirectLR(startRule));
         assertTrue(lrTransformer.hasIndirectLR(startRule));
+
+        Grammar newGrammar = lrTransformer.getTransformedGrammar();
+        LeftRecursionTransformer newLrTransformer = new LeftRecursionTransformer(newGrammar);
+        assertFalse(newLrTransformer.isGrammarAffected());
+
+        TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("123abc");
+
+        assertFalse(isInLanguage(newGrammar, "", ttl));
+        assertFalse(isInLanguage(newGrammar, "cc", ttl));
+        assertTrue( isInLanguage(newGrammar, "a", ttl));
+        assertTrue( isInLanguage(newGrammar, "b", ttl));
+        assertTrue( isInLanguage(newGrammar, "c", ttl));
+        assertTrue( isInLanguage(newGrammar, "1c3", ttl));
+
+        assertTrue( isInLanguage(newGrammar, "223", ttl));
+        assertTrue( isInLanguage(newGrammar, "1123", ttl));
+    }
+
+    private boolean isInLanguage(Grammar grammar, String input, TokenizerTypeList ttl) {
+        Tokenizer tokens = new Tokenizer(ttl, true);
+        tokens.tokenize(input);
+        return grammar.isInLanguage(tokens);
     }
 
     private Grammar getGrammar(String path) throws Exception {

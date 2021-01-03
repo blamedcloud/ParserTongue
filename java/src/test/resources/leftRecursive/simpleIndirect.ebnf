@@ -1,4 +1,4 @@
 
-start = first , "a" ;
+start = first , "a" | "a" ;
 
-first = start ;
+first = start , "a" ;
