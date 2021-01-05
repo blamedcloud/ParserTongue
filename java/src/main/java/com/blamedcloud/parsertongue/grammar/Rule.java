@@ -98,6 +98,8 @@ public class Rule {
         public Builder setRegexTokenType(TokenType regexTT) {
             this.regexTokenType = regexTT;
             this.regex = true;
+            this.rhsTree = new RHSTree(RHSType.REGEX);
+            this.rhsTree.createRegexNode(this.regexTokenType);
             return this;
         }
 
