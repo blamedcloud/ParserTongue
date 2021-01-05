@@ -42,7 +42,7 @@ public class Grammar {
     }
 
     public static Token getEmptyStringToken() {
-        return new Token("", Grammar.newTokenizer().getTTL().get(TERMINAL_NAME), "''");
+        return Grammar.getTerminalToken("");
     }
 
     public static Token getTerminalToken(String terminal) {
@@ -52,6 +52,11 @@ public class Grammar {
         } else {
             return new Token(terminal, terminalType, '"' + terminal + '"');
         }
+    }
+
+    public static Token getIdentifierToken(String identifier) {
+        TokenType identifierType = Grammar.newTokenizer().getTTL().get(IDENTIFIER_NAME);
+        return new Token(identifier, identifierType);
     }
 
     public static Builder newBuilder(File grammarFile) {
@@ -322,14 +327,19 @@ public class Grammar {
 
     // Note: This only works correctly if there are no regex rules
     public Map<String, Boolean> classifyFirstNStrings(int n) {
+        Set<String> alphabet = getAlphabet();
+        return classifyFirstNStrings(n, alphabet);
+    }
+
+    public Map<String, Boolean> classifyFirstNStrings(int n, Set<String> alphabet) {
         if (!linkageDone) {
             throw new RuntimeException("Cannot classify without linking!");
         }
         Map<String, Boolean> classification = new HashMap<>();
-
-        Set<String> alphabet = getAlphabet();
+        boolean hadEmptyString = true;
         if (!alphabet.contains("")) {
             alphabet.add("");
+            hadEmptyString = false;
         }
         Tokenizer tokenizer = new Tokenizer(TokenizerTypeList.getTTLForTerminals(alphabet), false);
         try {
@@ -350,6 +360,9 @@ public class Grammar {
             }
             classification.put(s, isInLanguage(tokenizer));
             n--;
+        }
+        if (hadEmptyString) {
+            alphabet.add("");
         }
         return classification;
     }
