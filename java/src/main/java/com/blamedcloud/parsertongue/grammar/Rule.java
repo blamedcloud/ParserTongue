@@ -21,11 +21,10 @@ import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.TER
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 
 import com.blamedcloud.parsertongue.grammar.expecterator.ParseResultExpecterator;
 import com.blamedcloud.parsertongue.grammar.expecterator.RuleExpecterator;
-import com.blamedcloud.parsertongue.grammar.result.ParseResult;
+import com.blamedcloud.parsertongue.grammar.result.ParseResultFunction;
 import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
 import com.blamedcloud.parsertongue.tokenizer.RegexToken;
 import com.blamedcloud.parsertongue.tokenizer.Token;
@@ -38,7 +37,7 @@ public class Rule {
     private Token lhsToken;
     private RHSTree rhsTree;
     private Tokenizer ruleTokens;
-    private Function<ParseResult, ParseResult> transformer;
+    private ParseResultFunction transformer;
     private boolean external;
     private String externalName;
     private boolean regex;
@@ -48,7 +47,7 @@ public class Rule {
     private static final int EXTERNAL_RULE_SIZE = 5;
     private static final int REGEX_RULE_SIZE = 4;
 
-    private static final Function<ParseResult, ParseResult> DEFAULT_TRANSFORMER = ParseResultTransformer::identity;
+    private static final ParseResultFunction DEFAULT_TRANSFORMER = ParseResultTransformer.identity;
 
     public static Builder newBuilder() {
         return new Builder();
@@ -58,7 +57,7 @@ public class Rule {
 
         private Token lhsToken;
         private RHSTree rhsTree;
-        private Function<ParseResult, ParseResult> transformer;
+        private ParseResultFunction transformer;
         private boolean external;
         private String externalName;
         private boolean regex;
@@ -84,7 +83,7 @@ public class Rule {
             return this;
         }
 
-        public Builder setTransformer(Function<ParseResult, ParseResult> transformer) {
+        public Builder setTransformer(ParseResultFunction transformer) {
             this.transformer = transformer;
             return this;
         }
@@ -147,11 +146,11 @@ public class Rule {
         return builder.build();
     }
 
-    public void setTransformer(Function<ParseResult, ParseResult> f) {
+    public void setTransformer(ParseResultFunction f) {
         transformer = f;
     }
 
-    public Function<ParseResult, ParseResult> getTransformer() {
+    public ParseResultFunction getTransformer() {
         return transformer;
     }
 

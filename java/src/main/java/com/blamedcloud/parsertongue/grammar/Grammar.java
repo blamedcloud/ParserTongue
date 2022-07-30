@@ -14,10 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 
 import com.blamedcloud.parsertongue.grammar.expecterator.ParseResultExpecterator;
-import com.blamedcloud.parsertongue.grammar.result.ParseResult;
+import com.blamedcloud.parsertongue.grammar.result.ParseResultFunction;
 import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
 import com.blamedcloud.parsertongue.smallstrings.SmallestStringIterator;
 import com.blamedcloud.parsertongue.tokenizer.Token;
@@ -213,7 +212,7 @@ public class Grammar {
         return ruleMap;
     }
 
-    public void setRuleTransformer(String ruleName, Function<ParseResult, ParseResult> f) {
+    public void setRuleTransformer(String ruleName, ParseResultFunction f) {
         if (ruleMap.containsKey(ruleName)) {
             ruleMap.get(ruleName).setTransformer(f);
         } else {

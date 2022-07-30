@@ -1,7 +1,5 @@
 package com.blamedcloud.parsertongue.grammar.result;
 
-import java.util.function.Function;
-
 public class ParseResultTransformer {
 
     private final boolean valid;
@@ -31,15 +29,17 @@ public class ParseResultTransformer {
         return "{valid: '" + valid + "'; result: '" + result + "'; error: '" + errorMessage + "'}";
     }
 
-    public ParseResultTransformer transform(Function<ParseResult, ParseResult> f) {
+    public ParseResultTransformer transform(ParseResultFunction f) {
         if (valid) {
-            return new ParseResultTransformer(valid, f.apply(result), errorMessage);
+            try {
+                return new ParseResultTransformer(true, f.apply(result), null);
+            } catch (ParseResultException e) {
+                return new ParseResultTransformer(false, null, e.getMessage());
+            }
         } else {
-            throw new RuntimeException("Can't transform failed parse!");
+            return this;
         }
     }
 
-    public static ParseResult identity(ParseResult parseResult) {
-        return parseResult;
-    }
+    public static ParseResultFunction identity = (x -> x);
 }

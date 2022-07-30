@@ -58,4 +58,17 @@ public class ListParseResult implements ParseResult {
         return new ListParseResult(input);
     }
 
+    public static ListParseResult flattenList(ParseResult input) {
+        if (input instanceof ListParseResult) {
+            ListParseResult result = new ListParseResult();
+            ListParseResult inputList = (ListParseResult) input;
+            for (ParseResult innerResult : inputList.getValue()) {
+                result.extend(ListParseResult.flattenList(innerResult));
+            }
+            return result;
+        } else {
+            return ListParseResult.wrapInList(input);
+        }
+    }
+
 }

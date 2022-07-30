@@ -7,11 +7,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 
 import com.blamedcloud.parsertongue.grammar.Grammar;
 import com.blamedcloud.parsertongue.grammar.dependencies.DependencyManager;
-import com.blamedcloud.parsertongue.grammar.result.ParseResult;
+import com.blamedcloud.parsertongue.grammar.result.ParseResultFunction;
 import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerException;
@@ -109,7 +108,7 @@ public class Parser {
         this.ttl = ttl;
     }
 
-    public void setRuleTransform(String ruleName, Function<ParseResult, ParseResult> f) {
+    public void setRuleTransform(String ruleName, ParseResultFunction f) {
         grammar.setRuleTransformer(ruleName, f);
     }
 
