@@ -11,6 +11,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.blamedcloud.parsertongue.tokenizer.RegexToken;
 import com.blamedcloud.parsertongue.tokenizer.Token;
 import com.blamedcloud.parsertongue.tokenizer.TokenType;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
@@ -50,7 +51,7 @@ public class RuleTest {
         Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType identifierType = tokenizer.getTTL().get(IDENTIFIER_NAME);
 
-        TokenType regexType = new TokenType("aManyB", "ab+");
+        TokenType regexType = new RegexToken("aManyB", "ab+");
 
         String ruleInput = "aManyB=~'ab+'";
         tokenizer.tokenize(ruleInput);

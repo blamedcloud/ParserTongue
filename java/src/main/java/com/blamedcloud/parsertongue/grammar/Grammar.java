@@ -296,6 +296,7 @@ public class Grammar {
         return alphabet;
     }
 
+    // Note: This only works correctly if there are no regex rules
     public Map<String, Boolean> classifyFirstNStrings(int n) {
         if (!linkageDone) {
             throw new RuntimeException("Cannot classify without linking!");

@@ -81,14 +81,14 @@ public class TokenizerTypeList implements Iterable<TokenType> {
 
     public static TokenizerTypeList defaultGrammarTTL() {
         TokenizerTypeList grammarTTL = new TokenizerTypeList();
-        grammarTTL.add(new TokenType(END_NAME, ";"));
-        grammarTTL.add(new TokenType(DEFINE_NAME, "="));
-        grammarTTL.add(new TokenType(EXTERNAL_NAME, ":"));
-        grammarTTL.add(new TokenType(REGEX_NAME, "~"));
-        grammarTTL.add(new TokenType(CONTROL_NAME, "[()\\[\\]{}|,]"));
-        grammarTTL.add(new TokenType(IDENTIFIER_NAME, "[a-zA-Z][a-zA-Z0-9_]*"));
-        grammarTTL.add(new TokenType(TERMINAL_NAME, "'([^']*)'|\"([^\"]*)\""));
-        grammarTTL.add(new TokenType(COMMENT_NAME, "(#.*\\n)|(#.*\\Z)", true));
+        grammarTTL.add(new ExactToken(END_NAME, ";"));
+        grammarTTL.add(new ExactToken(DEFINE_NAME, "="));
+        grammarTTL.add(new ExactToken(EXTERNAL_NAME, ":"));
+        grammarTTL.add(new ExactToken(REGEX_NAME, "~"));
+        grammarTTL.add(new RegexToken(CONTROL_NAME, "[()\\[\\]{}|,]"));
+        grammarTTL.add(new RegexToken(IDENTIFIER_NAME, "[a-zA-Z][a-zA-Z0-9_]*"));
+        grammarTTL.add(new RegexToken(TERMINAL_NAME, "'([^']*)'|\"([^\"]*)\""));
+        grammarTTL.add(new RegexToken(COMMENT_NAME, "(#.*\\n)|(#.*\\Z)", true));
         return grammarTTL;
     }
 
@@ -97,7 +97,7 @@ public class TokenizerTypeList implements Iterable<TokenType> {
         for (int i = 0; i < alphabet.length(); i++) {
             char c = alphabet.charAt(i);
             String letter = Character.toString(c);
-            alphabetTTL.add(new TokenType(letter, letter));
+            alphabetTTL.add(new ExactToken(letter, letter));
         }
         return alphabetTTL;
     }
@@ -105,7 +105,7 @@ public class TokenizerTypeList implements Iterable<TokenType> {
     public static TokenizerTypeList getTTLForTerminals(Collection<String> terminals) {
         TokenizerTypeList terminalsTTL = new TokenizerTypeList();
         for (String terminal : terminals) {
-            terminalsTTL.add(new TokenType(terminal, terminal));
+            terminalsTTL.add(new ExactToken(terminal, terminal));
         }
         return terminalsTTL;
     }

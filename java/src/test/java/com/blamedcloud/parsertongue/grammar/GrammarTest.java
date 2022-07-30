@@ -114,6 +114,23 @@ public class GrammarTest {
     }
 
     @Test
+    public void testGrammarMatchedParens() throws Exception {
+        Grammar grammar = getGrammar("src/test/resources/matchedParens.ebnf");
+        TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("()");
+
+        assertTrue(isInLanguage(grammar, "", ttl));
+        assertTrue(isInLanguage(grammar, "()", ttl));
+        assertTrue(isInLanguage(grammar, "(())", ttl));
+        assertTrue(isInLanguage(grammar, "(()()(()))", ttl));
+
+        assertFalse(isInLanguage(grammar, "(()", ttl));
+        assertFalse(isInLanguage(grammar, ")", ttl));
+        assertFalse(isInLanguage(grammar, "(", ttl));
+        assertFalse(isInLanguage(grammar, "(()(()())", ttl));
+        assertFalse(isInLanguage(grammar, "()(())())", ttl));
+    }
+
+    @Test
     public void testGrammarPalindrome() throws Exception {
         Grammar grammar = getGrammar("src/test/resources/palindrome.ebnf");
 

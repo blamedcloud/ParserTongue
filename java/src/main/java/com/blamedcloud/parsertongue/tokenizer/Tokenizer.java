@@ -99,7 +99,7 @@ public class Tokenizer {
         }
         if (value.length() == 0) {
             // if the empty string doesn't have a token type, make one up:
-            TokenType emptyType = new TokenType(EMPTY_NAME, "");
+            TokenType emptyType = new ExactToken(EMPTY_NAME, "");
             return emptyType;
         }
         throw new RuntimeException("Token '" + value + "' does not match any known token types!");

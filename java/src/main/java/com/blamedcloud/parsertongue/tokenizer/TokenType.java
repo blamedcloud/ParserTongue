@@ -2,59 +2,18 @@ package com.blamedcloud.parsertongue.tokenizer;
 
 import java.util.regex.Pattern;
 
-public class TokenType {
+public interface TokenType {
 
-    private final String typeName;
-    private final String typeExpression;
-    private final boolean ignored;
+    public String getName();
 
-    private final Pattern typePattern;
+    public String getExpression();
 
-    public TokenType(String name, String expression) {
-        typeName = name;
-        typeExpression = expression;
-        ignored = false;
+    public Pattern getPattern();
 
-        typePattern = Pattern.compile(typeExpression);
-    }
+    public boolean isTypeOf(String raw);
 
-    public TokenType(String name, String expression, boolean ignore) {
-        typeName = name;
-        typeExpression = expression;
-        ignored = ignore;
+    public boolean isIgnored();
 
-        typePattern = Pattern.compile(typeExpression);
-    }
-
-    public String getName() {
-        return typeName;
-    }
-
-    public boolean isTypeOf(String raw) {
-        return typePattern.matcher(raw).matches();
-    }
-
-    public boolean isIgnored() {
-        return ignored;
-    }
-
-    public Pattern getPattern() {
-        return typePattern;
-    }
-
-    public String getExpression() {
-        return typeExpression;
-    }
-
-    // technically two different patterns could yield the same regular language
-    // but we choose not to care about that case.
-    public boolean isSameAs(TokenType other) {
-        return (typeName.equals(other.typeName) && typeExpression.equals(other.typeExpression));
-    }
-
-    @Override
-    public String toString() {
-        return "(" + typeName + ", " + typeExpression + ")";
-    }
+    public boolean isSameAs(TokenType other);
 
 }

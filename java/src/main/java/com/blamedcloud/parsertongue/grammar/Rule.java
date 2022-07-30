@@ -27,6 +27,7 @@ import com.blamedcloud.parsertongue.grammar.expecterator.ParseResultExpecterator
 import com.blamedcloud.parsertongue.grammar.expecterator.RuleExpecterator;
 import com.blamedcloud.parsertongue.grammar.result.ParseResult;
 import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
+import com.blamedcloud.parsertongue.tokenizer.RegexToken;
 import com.blamedcloud.parsertongue.tokenizer.Token;
 import com.blamedcloud.parsertongue.tokenizer.TokenType;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
@@ -283,7 +284,7 @@ public class Rule {
                 ruleTokens.nextToken();
                 if (currentTokenTypeIs(TERMINAL_NAME)) {
                     regex = true;
-                    regexTokenType = new TokenType(lhsToken.getValue(), ruleTokens.currentToken().getValue());
+                    regexTokenType = new RegexToken(lhsToken.getValue(), ruleTokens.currentToken().getValue());
                     rhsTree = new RHSTree(RHSType.REGEX);
                     rhsTree.createRegexNode(regexTokenType);
                     ruleTokens.nextToken();
