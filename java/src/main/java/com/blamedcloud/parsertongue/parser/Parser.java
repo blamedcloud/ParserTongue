@@ -14,6 +14,7 @@ import com.blamedcloud.parsertongue.grammar.dependencies.DependencyManager;
 import com.blamedcloud.parsertongue.grammar.result.ParseResult;
 import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
+import com.blamedcloud.parsertongue.tokenizer.TokenizerException;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
 
 public class Parser {
@@ -144,7 +145,11 @@ public class Parser {
 
     public ParseResultTransformer parseString(String parseString, boolean ingoreWhiteSpace) {
         Tokenizer tokens = new Tokenizer(ttl, ingoreWhiteSpace);
-        tokens.tokenize(parseString);
+        try {
+            tokens.tokenize(parseString);
+        } catch (TokenizerException e) {
+            return new ParseResultTransformer(false, null, e.getMessage());
+        }
         return grammar.tryParse(tokens);
     }
 

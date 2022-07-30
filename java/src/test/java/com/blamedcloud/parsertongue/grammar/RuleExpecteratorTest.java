@@ -15,12 +15,13 @@ import org.junit.Test;
 import com.blamedcloud.parsertongue.grammar.expecterator.ParseResultExpecterator;
 import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
+import com.blamedcloud.parsertongue.tokenizer.TokenizerException;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
 
 public class RuleExpecteratorTest {
 
     @Test
-    public void simpleTerminalTest() {
+    public void simpleTerminalTest() throws Exception {
         Rule rule = createRule("start = 'a'");
 
         ParseResultTransformer result = parseString(rule, "a");
@@ -33,7 +34,7 @@ public class RuleExpecteratorTest {
     }
 
     @Test
-    public void simpleRegexTest() {
+    public void simpleRegexTest() throws Exception {
         Rule rule = createRule("start = ~ 'abc*'");
         Set<String> terminals = new HashSet<>();
         terminals.add("abcc");
@@ -49,7 +50,7 @@ public class RuleExpecteratorTest {
     }
 
     @Test
-    public void simpleIdentifierTest() {
+    public void simpleIdentifierTest() throws Exception {
         Rule first = createRule("first = second");
         Rule second = createRule("second = 'third'");
         Map<String, Rule> ruleMap = new HashMap<>();
@@ -70,7 +71,7 @@ public class RuleExpecteratorTest {
     }
 
     @Test
-    public void simpleGroupTest() {
+    public void simpleGroupTest() throws Exception {
         Rule rule = createRule("start = ( 'a' )");
         TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("ab");
 
@@ -83,7 +84,7 @@ public class RuleExpecteratorTest {
     }
 
     @Test
-    public void simpleOptionalTest() {
+    public void simpleOptionalTest() throws Exception {
         Rule rule = createRule("start = [ 'a' ]");
         TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("ab");
 
@@ -100,7 +101,7 @@ public class RuleExpecteratorTest {
     }
 
     @Test
-    public void simpleAlternationTest() {
+    public void simpleAlternationTest() throws Exception {
         Rule rule = createRule("start = 'a' | 'b'");
         TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("abc");
 
@@ -117,7 +118,7 @@ public class RuleExpecteratorTest {
     }
 
     @Test
-    public void simpleRepeatTest() {
+    public void simpleRepeatTest() throws Exception {
         Rule rule = createRule("start = { 'a' }");
         TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("ab");
 
@@ -157,7 +158,7 @@ public class RuleExpecteratorTest {
     }
 
     @Test
-    public void simpleConcatTest() {
+    public void simpleConcatTest() throws Exception {
         Rule rule = createRule("start = 'a' , 'b' , 'a'");
         TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("abc");
 
@@ -181,7 +182,7 @@ public class RuleExpecteratorTest {
     }
 
     @Test
-    public void complexRuleTest() {
+    public void complexRuleTest() throws Exception {
         Rule rule = createRule("start = 'a' | ('b' | [ 'c' | 'd' ] ) | 'e'");
         TokenizerTypeList ttl = TokenizerTypeList.getTTLForAlphabet("abcdef");
 
@@ -215,7 +216,7 @@ public class RuleExpecteratorTest {
         assertFalse(result.isValid());
     }
 
-    private Rule createRule(String ruleInput) {
+    private Rule createRule(String ruleInput) throws Exception {
         Tokenizer tokenizer = Grammar.newTokenizer();
         tokenizer.tokenize(ruleInput);
         Rule rule = new Rule(tokenizer);
@@ -229,7 +230,11 @@ public class RuleExpecteratorTest {
 
     private ParseResultTransformer parseString(Rule rule, String input, TokenizerTypeList ttl) {
         Tokenizer tokens = new Tokenizer(ttl, true);
-        tokens.tokenize(input);
+        try {
+            tokens.tokenize(input);
+        } catch (TokenizerException e) {
+            return new ParseResultTransformer(false, null, e.getMessage());
+        }
 
         ParseResultExpecterator expecterator = rule.getExpecterator(tokens);
         ParseResultTransformer result = null;

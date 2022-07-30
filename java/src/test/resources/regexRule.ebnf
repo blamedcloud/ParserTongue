@@ -1,0 +1,6 @@
+
+start = regex1 | regex2 ;
+
+regex1 = ~ 'ab?c*d{0,3}' ;
+
+regex2 = ~ '1*22?3*' ;

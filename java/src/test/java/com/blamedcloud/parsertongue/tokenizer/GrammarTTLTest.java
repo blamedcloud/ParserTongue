@@ -19,7 +19,7 @@ import com.blamedcloud.parsertongue.grammar.Grammar;
 public class GrammarTTLTest {
 
     @Test
-    public void TestControl() {
+    public void TestControl() throws Exception {
         Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType controlType = tokenizer.getTTL().get(CONTROL_NAME);
 
@@ -35,7 +35,7 @@ public class GrammarTTLTest {
     }
 
     @Test
-    public void TestIdentifier() {
+    public void TestIdentifier() throws Exception {
         Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType identifierType = tokenizer.getTTL().get(IDENTIFIER_NAME);
 
@@ -64,7 +64,7 @@ public class GrammarTTLTest {
     }
 
     @Test
-    public void TestTerminal() {
+    public void TestTerminal() throws Exception {
         Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType terminalType = tokenizer.getTTL().get(TERMINAL_NAME);
 
@@ -89,7 +89,7 @@ public class GrammarTTLTest {
     }
 
     @Test
-    public void TestComment() {
+    public void TestComment() throws Exception {
         Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType commentType = tokenizer.getTTL().get(COMMENT_NAME);
 
@@ -106,7 +106,7 @@ public class GrammarTTLTest {
     }
 
     @Test
-    public void TestOthers() {
+    public void TestOthers() throws Exception {
         Tokenizer tokenizer = Grammar.newTokenizer();
         TokenType endType = tokenizer.getTTL().get(END_NAME);
         TokenType defineType = tokenizer.getTTL().get(DEFINE_NAME);

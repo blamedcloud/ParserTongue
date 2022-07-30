@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.blamedcloud.parsertongue.smallstrings.SmallestStringIterator;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
+import com.blamedcloud.parsertongue.tokenizer.TokenizerException;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
 
 // This is a naive iterator that tries each possible string in
@@ -63,7 +64,11 @@ public class ValidStringIterator implements Iterator<String> {
         }
         TokenizerTypeList ttlWithEmpty = TokenizerTypeList.getTTLForTerminals(alphabet);
         Tokenizer emptyTokenizer = new Tokenizer(ttlWithEmpty, ignoreWS);
-        emptyTokenizer.tokenize("");
+        try {
+            emptyTokenizer.tokenize("");
+        } catch (TokenizerException e) {
+            throw new RuntimeException(e);
+        }
         emptyStringValid = grammar.isInLanguage(emptyTokenizer);
         alphabet.remove("");
         if (maxIterations == null && !walkResult.isInfinite) {
@@ -101,7 +106,11 @@ public class ValidStringIterator implements Iterator<String> {
         String nextString = "";
         while (!inLanguage) {
             nextString = stringIterator.next();
-            tokenizer.tokenize(nextString);
+            try {
+                tokenizer.tokenize(nextString);
+            } catch (TokenizerException e) {
+                throw new RuntimeException(e);
+            }
             inLanguage = grammar.isInLanguage(tokenizer);
         }
         numIterations++;

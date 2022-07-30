@@ -22,6 +22,7 @@ import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
 import com.blamedcloud.parsertongue.smallstrings.SmallestStringIterator;
 import com.blamedcloud.parsertongue.tokenizer.Token;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
+import com.blamedcloud.parsertongue.tokenizer.TokenizerException;
 import com.blamedcloud.parsertongue.tokenizer.TokenizerTypeList;
 
 public class Grammar {
@@ -118,7 +119,11 @@ public class Grammar {
         }
 
         Tokenizer fullTokenizer = Grammar.newTokenizer();
-        fullTokenizer.tokenize(fullText);
+        try {
+            fullTokenizer.tokenize(fullText);
+        } catch (TokenizerException e) {
+            throw new RuntimeException(e);
+        }
 
         Token splitToken = new Token(";", fullTokenizer.getTTL().get(END_NAME));
 
@@ -308,14 +313,22 @@ public class Grammar {
             alphabet.add("");
         }
         Tokenizer tokenizer = new Tokenizer(TokenizerTypeList.getTTLForTerminals(alphabet), false);
-        tokenizer.tokenize("");
+        try {
+            tokenizer.tokenize("");
+        } catch (TokenizerException e) {
+            throw new RuntimeException(e);
+        }
         classification.put("", isInLanguage(tokenizer));
         alphabet.remove("");
         n--;
         SmallestStringIterator smallestStringIterator = new SmallestStringIterator(alphabet);
         while (n > 0) {
             String s = smallestStringIterator.next();
-            tokenizer.tokenize(s);
+            try {
+                tokenizer.tokenize(s);
+            } catch (TokenizerException e) {
+                throw new RuntimeException(e);
+            }
             classification.put(s, isInLanguage(tokenizer));
             n--;
         }

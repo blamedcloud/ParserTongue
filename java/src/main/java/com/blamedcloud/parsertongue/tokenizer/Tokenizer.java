@@ -91,7 +91,7 @@ public class Tokenizer {
         return exhausted;
     }
 
-    private TokenType determineTokenType(String value) {
+    private TokenType determineTokenType(String value) throws TokenizerException {
         for (TokenType tt : tokenizerTypeList) {
             if (tt.isTypeOf(value)) {
                 return tt;
@@ -102,11 +102,18 @@ public class Tokenizer {
             TokenType emptyType = new ExactToken(EMPTY_NAME, "");
             return emptyType;
         }
-        throw new RuntimeException("Token '" + value + "' does not match any known token types!");
+        throw new TokenizerException("Token '" + value + "' does not match any known token types!");
     }
 
     private Token getEmptyToken() {
-        TokenType emptyType = determineTokenType("");
+        TokenType emptyType;
+        try {
+            emptyType = determineTokenType("");
+        } catch (TokenizerException e) {
+            // The empty string should always have a token type
+            // So this should never get thrown
+            throw new RuntimeException(e);
+        }
         return new Token("", emptyType);
     }
 
@@ -183,7 +190,7 @@ public class Tokenizer {
         ignoreWhiteSpace = ignoreWS;
     }
 
-    public void tokenize(String rawText) {
+    public void tokenize(String rawText) throws TokenizerException {
         setDefaults();
 
         while (rawText.length() > 0) {
@@ -228,7 +235,7 @@ public class Tokenizer {
                     }
                 }
                 if (!hasMatch) {
-                    throw new RuntimeException("Beginning of text doesn't match any known TokenTypes: '" + rawText + "'");
+                    throw new TokenizerException("Beginning of text doesn't match any known TokenTypes: '" + rawText + "'");
                 }
             }
         }

@@ -17,7 +17,7 @@ public class AlphabetTokenizerTest {
     }
 
     @Test
-    public void alphabetTokenizerTestNoWS() {
+    public void alphabetTokenizerTestNoWS() throws Exception {
         TokenizerTypeList alphabetTTL = TokenizerTypeList.getTTLForAlphabet("abc");
         Tokenizer tokenizer = new Tokenizer(alphabetTTL, false);
         String fullText = "aababcc";
@@ -26,7 +26,7 @@ public class AlphabetTokenizerTest {
     }
 
     @Test
-    public void alphabetTokenizerTestWS() {
+    public void alphabetTokenizerTestWS() throws Exception {
         TokenizerTypeList alphabetTTL = TokenizerTypeList.getTTLForAlphabet("abcd");
         Tokenizer tokenizer = new Tokenizer(alphabetTTL, true);
         String fullText = "a ab  a\nb\t \nc c";

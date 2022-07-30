@@ -162,7 +162,7 @@ public class GrammarTest {
         return string.length() - string.replace(character, "").length();
     }
 
-    private boolean isInLanguage(Grammar grammar, String input, TokenizerTypeList ttl) {
+    private boolean isInLanguage(Grammar grammar, String input, TokenizerTypeList ttl) throws Exception {
         Tokenizer tokens = new Tokenizer(ttl, true);
         tokens.tokenize(input);
         return grammar.isInLanguage(tokens);
