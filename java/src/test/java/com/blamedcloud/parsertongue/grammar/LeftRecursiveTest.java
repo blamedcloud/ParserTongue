@@ -13,6 +13,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.blamedcloud.parsertongue.grammar.transformer.LeftRecursionTransformer;
+import com.blamedcloud.parsertongue.tokenizer.RegexToken;
 import com.blamedcloud.parsertongue.tokenizer.Token;
 import com.blamedcloud.parsertongue.tokenizer.TokenType;
 import com.blamedcloud.parsertongue.tokenizer.Tokenizer;
@@ -134,7 +135,7 @@ public class LeftRecursiveTest {
         assertTrue( isInLanguage(newGrammar, "1123", ttl));
     }
 
-    private boolean isInLanguage(Grammar grammar, String input, TokenizerTypeList ttl) {
+    private boolean isInLanguage(Grammar grammar, String input, TokenizerTypeList ttl) throws Exception {
         Tokenizer tokens = new Tokenizer(ttl, true);
         tokens.tokenize(input);
         return grammar.isInLanguage(tokens);
@@ -147,7 +148,7 @@ public class LeftRecursiveTest {
     private void compareGrammars(Grammar grammar, String regex, Set<String> regexAlphabet) throws Exception {
         Map<String, Boolean> oldClassification = grammar.classifyFirstNStrings(TEST_ITERATIONS);
 
-        TokenType regexTokenType = new TokenType(REGEX_RULE_NAME, regex);
+        TokenType regexTokenType = new RegexToken(REGEX_RULE_NAME, regex);
         Token lhs = Grammar.getIdentifierToken(REGEX_RULE_NAME);
         Rule rule = Rule.newBuilder().setLHSToken(lhs).setRegexTokenType(regexTokenType).build();
 

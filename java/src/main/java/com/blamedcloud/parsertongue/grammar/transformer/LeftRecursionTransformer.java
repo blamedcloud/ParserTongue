@@ -16,6 +16,9 @@ import com.blamedcloud.parsertongue.tokenizer.Token;
 import com.blamedcloud.parsertongue.utility.FixedPair;
 import com.blamedcloud.parsertongue.utility.Pair;
 
+// I think this class (or, rather the paper it was based on) doesn't
+// perfectly remove all types of left recursion, but it does work
+// for some. It can also be used to check for left recursion.
 public class LeftRecursionTransformer implements GrammarTransformer {
 
     private Grammar originalGrammar;
