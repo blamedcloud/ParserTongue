@@ -149,6 +149,14 @@ public class Rule {
         return builder.build();
     }
 
+    public static ParseResultFunction compose(ParseResultFunction outer, ParseResultFunction inner) {
+        return (pr -> outer.apply(inner.apply(pr)));
+    }
+
+    public void composeTransformer(ParseResultFunction f) {
+        transformer = Rule.compose(f, transformer);
+    }
+
     public void setTransformer(ParseResultFunction f) {
         transformer = f;
     }

@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.blamedcloud.parsertongue.grammar.Grammar;
+import com.blamedcloud.parsertongue.grammar.annotations.AnnotationManager;
 import com.blamedcloud.parsertongue.grammar.dependencies.DependencyManager;
 import com.blamedcloud.parsertongue.grammar.result.ParseResultFunction;
 import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
@@ -33,12 +34,14 @@ public class Parser {
         private String startSymbol;
         private List<File> dependentGrammarFiles;
         private boolean ignoreWhiteSpaceDefault;
+        private AnnotationManager annotationManager;
 
         public Builder(File grammarFile) {
             this.grammarFile = grammarFile;
             startSymbol = null;
             dependentGrammarFiles = null;
             ignoreWhiteSpaceDefault = false;
+            annotationManager = null;
         }
 
         public Builder setStartSymbol(String startSymbol) {
@@ -56,6 +59,11 @@ public class Parser {
             return this;
         }
 
+        public Builder setAnnotationManager(AnnotationManager annotations) {
+            annotationManager = annotations;
+            return this;
+        }
+
         public Parser build() {
             return new Parser(this);
         }
@@ -69,6 +77,9 @@ public class Parser {
         Grammar.Builder grammarBuilder = Grammar.newBuilder(builder.grammarFile).setDeferLinkage(true);
         if (builder.startSymbol != null) {
             grammarBuilder.setStartSymbol(builder.startSymbol);
+        }
+        if (builder.annotationManager != null) {
+            grammarBuilder.setAnnotationManager(builder.annotationManager);
         }
         grammar = grammarBuilder.build();
         if (grammar.hasDependencies()) {
@@ -110,6 +121,10 @@ public class Parser {
 
     public void setRuleTransform(String ruleName, ParseResultFunction f) {
         grammar.setRuleTransformer(ruleName, f);
+    }
+
+    public void composeRuleTransform(String ruleName, ParseResultFunction f) {
+        grammar.composeRuleTransformer(ruleName, f);
     }
 
     public Grammar getGrammar() {

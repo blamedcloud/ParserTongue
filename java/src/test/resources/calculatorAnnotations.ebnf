@@ -1,0 +1,22 @@
+start = expr ;
+
+pos_int = ~ '[1-9][0-9]*' @ toInt ;
+neg_int = '-' , pos_int @ toInt . concat ;
+zero = '0' @ toInt ;
+
+integer = neg_int | zero | pos_int ;
+
+partial_add = '+' , term ;
+partial_minus = '-' , term ;
+expr = term , { partial_add | partial_minus };
+
+partial_mult = '*' , power ;
+partial_div = '/' , power ;
+term = power , { partial_mult | partial_div };
+
+pow_expr = factor , '^' , power ;
+power = factor | pow_expr ;
+
+group_expr = '(' , expr , ')' @ toInt . index '1' ;
+factor = integer | group_expr ;
+

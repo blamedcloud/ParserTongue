@@ -178,6 +178,14 @@ public class Tokenizer {
         }
     }
 
+    public Token getFirstToken() {
+        if (size() == 0) {
+            return getEmptyToken();
+        } else {
+            return tokens.get(0);
+        }
+    }
+
     public TokenizerTypeList getTTL() {
         return tokenizerTypeList;
     }

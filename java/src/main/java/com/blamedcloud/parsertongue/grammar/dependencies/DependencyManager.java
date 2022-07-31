@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.blamedcloud.parsertongue.grammar.Grammar;
 import com.blamedcloud.parsertongue.grammar.Rule;
+import com.blamedcloud.parsertongue.grammar.annotations.AnnotationManager;
 
 public class DependencyManager {
 
@@ -25,10 +26,13 @@ public class DependencyManager {
 
     private Tree<Grammar> primaryDependencyTree;
 
+    private AnnotationManager primaryAnnotationManager;
+
     public DependencyManager(String mainGrammarName, Grammar mainGrammar, List<File> otherGrammarFiles) {
         primaryDependencyTree = new Tree<>(mainGrammarName, mainGrammar);
         grammarFiles = new HashMap<>();
         grammars = new HashMap<>();
+        primaryAnnotationManager = mainGrammar.getAnnotationManager();
         for (File grammarFile : otherGrammarFiles) {
             String grammarName = grammarFileToName(grammarFile);
             grammarFiles.put(grammarName, grammarFile);
@@ -83,7 +87,10 @@ public class DependencyManager {
             return grammars.get(grammarName);
         } else if (grammarFiles.containsKey(grammarName)) {
             File grammarFile = grammarFiles.get(grammarName);
-            Grammar grammar = Grammar.newBuilder(grammarFile).setDeferLinkage(true).build();
+            Grammar grammar = Grammar.newBuilder(grammarFile)
+                                     .setDeferLinkage(true)
+                                     .setAnnotationManager(primaryAnnotationManager)
+                                     .build();
             grammars.put(grammarName, grammar);
             grammarFiles.remove(grammarName);
             return grammar;

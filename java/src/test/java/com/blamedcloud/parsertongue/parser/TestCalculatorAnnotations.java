@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.blamedcloud.parsertongue.grammar.annotations.AnnotationManager;
 import com.blamedcloud.parsertongue.grammar.result.IntParseResult;
 import com.blamedcloud.parsertongue.grammar.result.ListParseResult;
 import com.blamedcloud.parsertongue.grammar.result.NumericParseResult;
@@ -16,7 +17,7 @@ import com.blamedcloud.parsertongue.grammar.result.ParseResultException;
 import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
 import com.blamedcloud.parsertongue.grammar.result.RationalParseResult;
 
-public class TestCalculator {
+public class TestCalculatorAnnotations {
 
     @Test
     public void testInts() {
@@ -136,27 +137,22 @@ public class TestCalculator {
     }
 
     private Parser getCalculator() {
-        File grammarFile = new File("src/test/resources/calculator.ebnf");
+        File grammarFile = new File("src/test/resources/calculatorAnnotations.ebnf");
 
-        Parser parser = Parser.newBuilder(grammarFile).setIgnoreWhiteSpaceDefault(true).build();
+        AnnotationManager annotationManager = AnnotationManager.getDefaultManager();
 
-        parser.setRuleTransform("pos_int", i -> new IntParseResult(i.toString()));
-        parser.setRuleTransform("zero", i -> new IntParseResult(i.toString()));
-        parser.setRuleTransform("neg_int", TestCalculator::negativeInt);
-        parser.setRuleTransform("group_expr", TestCalculator::groupExpr);
-        parser.setRuleTransform("pow_expr", TestCalculator::powExpr);
-        parser.setRuleTransform("expr", TestCalculator::evalExpr);
+        Parser parser = Parser.newBuilder(grammarFile)
+                              .setIgnoreWhiteSpaceDefault(true)
+                              .setAnnotationManager(annotationManager)
+                              .build();
+
+        parser.setRuleTransform("pow_expr", TestCalculatorAnnotations::powExpr);
+        parser.setRuleTransform("expr", TestCalculatorAnnotations::evalExpr);
 
         parser.setRuleTransform("term", ListParseResult::flattenList);
-        parser.composeRuleTransform("term", TestCalculator::evalTerm);
+        parser.composeRuleTransform("term", TestCalculatorAnnotations::evalTerm);
 
         return parser;
-    }
-
-    private static ParseResult negativeInt(ParseResult pr) {
-        ListParseResult lpr = (ListParseResult)pr;
-        String value = '-' + lpr.getValue().get(1).toString();
-        return new IntParseResult(value);
     }
 
     private static ParseResult evalExpr(ParseResult expr) throws ParseResultException {
@@ -193,12 +189,6 @@ public class TestCalculator {
             }
         }
         return value;
-    }
-
-    private static ParseResult groupExpr(ParseResult expr) {
-        ListParseResult listexpr = (ListParseResult) expr;
-        int middle = Integer.valueOf(listexpr.getValue().get(1).toString());
-        return new IntParseResult(middle);
     }
 
     private static ParseResult powExpr(ParseResult expr) throws ParseResultException {

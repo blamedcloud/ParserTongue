@@ -1,5 +1,6 @@
 package com.blamedcloud.parsertongue.grammar;
 
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.ANNOTATION_NAME;
 import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.END_NAME;
 import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.IDENTIFIER_NAME;
 import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.TERMINAL_NAME;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import com.blamedcloud.parsertongue.grammar.annotations.AnnotationManager;
 import com.blamedcloud.parsertongue.grammar.expecterator.ParseResultExpecterator;
 import com.blamedcloud.parsertongue.grammar.result.ParseResultFunction;
 import com.blamedcloud.parsertongue.grammar.result.ParseResultTransformer;
@@ -36,6 +38,7 @@ public class Grammar {
     private Map<String, Map<String, Rule>> externalRuleMaps;
     private boolean linkageDone;
     private TokenizerTypeList additionalTokenTypes;
+    private AnnotationManager annotationManager;
 
     public static Tokenizer newTokenizer() {
         return new Tokenizer();
@@ -69,12 +72,14 @@ public class Grammar {
         private String startSymbol;
         private boolean lastStart;
         private boolean deferLinkage;
+        private AnnotationManager annotationManager;
 
         public Builder(File grammarFile) {
             this.grammarFile = grammarFile;
             startSymbol = null;
             lastStart = false;
             deferLinkage = false;
+            annotationManager = null;
         }
 
         public Builder setStartSymbol(String startSymbol) {
@@ -92,6 +97,11 @@ public class Grammar {
             return this;
         }
 
+        public Builder setAnnotationManager(AnnotationManager annotations) {
+            annotationManager = annotations;
+            return this;
+        }
+
         public Grammar build() {
             return new Grammar(this);
         }
@@ -99,6 +109,7 @@ public class Grammar {
 
     private Grammar(Builder builder) {
         initialSetup();
+        annotationManager = builder.annotationManager;
         parseRules(builder);
     }
 
@@ -123,6 +134,7 @@ public class Grammar {
         externalRuleMaps = new HashMap<>();
         linkageDone = false;
         additionalTokenTypes = new TokenizerTypeList();
+        annotationManager = null;
     }
 
     private void parseRules(Builder builder) {
@@ -149,7 +161,7 @@ public class Grammar {
         List<Tokenizer> ruleTokenizers = fullTokenizer.splitTokensOn(splitToken);
 
         for (Tokenizer tokens : ruleTokenizers) {
-            Rule rule = new Rule(tokens);
+            Rule rule = createRule(tokens);
             addRule(rule);
         }
 
@@ -167,6 +179,25 @@ public class Grammar {
         } else {
             setStart(builder.startSymbol);
         }
+    }
+
+    private Rule createRule(Tokenizer tokens) {
+        Token annotationToken = new Token("@", tokens.getTTL().get(ANNOTATION_NAME));
+        List<Tokenizer> splitTokenizers = tokens.splitTokensOn(annotationToken);
+
+        if (splitTokenizers.size() < 1) {
+            throw new RuntimeException("No rule tokens");
+        }
+
+        Rule rule = new Rule(splitTokenizers.get(0));
+        if (splitTokenizers.size() == 2 && annotationManager != null) {
+            ParseResultFunction f = annotationManager.parseAnnotation(splitTokenizers.get(1));
+            rule.setTransformer(f);
+        } else if (splitTokenizers.size() > 2) {
+            throw new RuntimeException("More than one annotation token");
+        }
+
+        return rule;
     }
 
     private void addRule(Rule rule) {
@@ -203,6 +234,10 @@ public class Grammar {
         return externalDependencyNames;
     }
 
+    public AnnotationManager getAnnotationManager() {
+        return annotationManager;
+    }
+
     public boolean hasDependencies() {
         return externalDependencyNames.size() > 0;
     }
@@ -235,6 +270,14 @@ public class Grammar {
     public void setRuleTransformer(String ruleName, ParseResultFunction f) {
         if (ruleMap.containsKey(ruleName)) {
             ruleMap.get(ruleName).setTransformer(f);
+        } else {
+            throw new RuntimeException("No Rule with name '" + ruleName + "' exists!");
+        }
+    }
+
+    public void composeRuleTransformer(String ruleName, ParseResultFunction f) {
+        if (ruleMap.containsKey(ruleName)) {
+            ruleMap.get(ruleName).composeTransformer(f);
         } else {
             throw new RuntimeException("No Rule with name '" + ruleName + "' exists!");
         }

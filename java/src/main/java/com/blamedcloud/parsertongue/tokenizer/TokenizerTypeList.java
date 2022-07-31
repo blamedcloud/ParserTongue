@@ -1,6 +1,8 @@
 package com.blamedcloud.parsertongue.tokenizer;
 
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.ANNOTATION_NAME;
 import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.COMMENT_NAME;
+import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.COMPOSITION_NAME;
 import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.CONTROL_NAME;
 import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.DEFINE_NAME;
 import static com.blamedcloud.parsertongue.tokenizer.DefaultGrammarConstants.END_NAME;
@@ -85,6 +87,8 @@ public class TokenizerTypeList implements Iterable<TokenType> {
         grammarTTL.add(new ExactToken(DEFINE_NAME, "="));
         grammarTTL.add(new ExactToken(EXTERNAL_NAME, ":"));
         grammarTTL.add(new ExactToken(REGEX_NAME, "~"));
+        grammarTTL.add(new ExactToken(ANNOTATION_NAME, "@"));
+        grammarTTL.add(new ExactToken(COMPOSITION_NAME, "."));
         grammarTTL.add(new RegexToken(CONTROL_NAME, "[()\\[\\]{}|,]"));
         grammarTTL.add(new RegexToken(IDENTIFIER_NAME, "[a-zA-Z][a-zA-Z0-9_]*"));
         grammarTTL.add(new RegexToken(TERMINAL_NAME, "'([^']*)'|\"([^\"]*)\""));
